@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing, radius, shadows, layout } from '../../constants/theme';
+import { colors, spacing, radius, shadows, layout } from '../../constants/theme';
 
 export default function Accueil() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      
+
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -23,7 +23,7 @@ export default function Accueil() {
         <Text style={styles.addressArrow}>›</Text>
       </TouchableOpacity>
 
-      {/* Bannière luxe */}
+      {/* Bannière */}
       <View style={styles.heroBanner}>
         <Text style={styles.heroTitle}>Livraison en moins d'une heure</Text>
         <Text style={styles.heroSub}>Les meilleures boutiques parisiennes, livrées chez vous</Text>
@@ -76,10 +76,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   logo: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '400',
     color: colors.textPrimary,
-    letterSpacing: 6,
+    letterSpacing: 8,
   },
   tagline: {
     fontSize: 12,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.gold,
     marginBottom: spacing.sm,
     letterSpacing: 0.5,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     paddingHorizontal: layout.screenPadding,
     marginBottom: spacing.lg,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   boutiqueName: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     marginBottom: 4,
   },
@@ -214,6 +214,6 @@ const styles = StyleSheet.create({
   boutiqueBadgeText: {
     fontSize: 11,
     color: colors.success,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 });
