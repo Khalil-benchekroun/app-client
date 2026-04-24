@@ -25,12 +25,10 @@ export default function FicheProduit() {
         {/* Infos produit */}
         <View style={styles.content}>
 
-          {/* Boutique */}
-          <TouchableOpacity style={styles.boutiqueTag}>
+          <TouchableOpacity style={styles.boutiqueTag} onPress={() => router.back()}>
             <Text style={styles.boutiqueTagText}>Boutique Parisienne ›</Text>
           </TouchableOpacity>
 
-          {/* Nom & Prix */}
           <View style={styles.header}>
             <Text style={styles.productName}>Robe en soie</Text>
             <Text style={styles.productPrice}>245,00 €</Text>
@@ -38,7 +36,6 @@ export default function FicheProduit() {
 
           <Text style={styles.productCategory}>Mode · Femme</Text>
 
-          {/* Délai */}
           <View style={styles.delaiRow}>
             <Text style={styles.delaiIcon}>◎</Text>
             <Text style={styles.delaiText}>Livraison estimée en <Text style={styles.delaiHighlight}>45 min</Text></Text>
@@ -82,12 +79,11 @@ export default function FicheProduit() {
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Description</Text>
             <Text style={styles.description}>
-              Robe fluide en soie naturelle, coupe midi élégante. Parfaite pour toutes les occasions, 
+              Robe fluide en soie naturelle, coupe midi élégante. Parfaite pour toutes les occasions,
               elle allie raffinement et confort. Disponible en plusieurs coloris exclusifs.
             </Text>
           </View>
 
-          {/* Composition */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Composition</Text>
             <Text style={styles.description}>100% Soie naturelle — Lavage à la main recommandé</Text>
@@ -102,7 +98,10 @@ export default function FicheProduit() {
           <Text style={styles.footerPriceLabel}>Prix total</Text>
           <Text style={styles.footerPriceValue}>245,00 €</Text>
         </View>
-        <TouchableOpacity style={styles.addToCartBtn}>
+        <TouchableOpacity
+          style={styles.addToCartBtn}
+          onPress={() => router.push('/commande/recap')}
+        >
           <Text style={styles.addToCartText}>Ajouter au panier</Text>
         </TouchableOpacity>
       </View>

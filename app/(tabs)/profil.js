@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
 const menuItems = [
@@ -43,7 +44,14 @@ export default function Profil() {
       {/* Menu */}
       <View style={styles.menuSection}>
         {menuItems.map((item) => (
-          <TouchableOpacity key={item.label} style={styles.menuItem}>
+          <TouchableOpacity
+            key={item.label}
+            style={styles.menuItem}
+            onPress={() => {
+              if (item.label === 'Mes favoris') router.push('/favoris');
+              if (item.label === 'Mes adresses') router.push('/adresse');
+            }}
+          >
             <Text style={styles.menuIcon}>{item.icon}</Text>
             <Text style={styles.menuLabel}>{item.label}</Text>
             <Text style={styles.menuArrow}>›</Text>

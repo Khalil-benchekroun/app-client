@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
@@ -73,7 +73,7 @@ export default function FicheBoutique() {
           <TouchableOpacity
             key={produit.id}
             style={[styles.produitCard, !produit.dispo && styles.produitIndispo]}
-            onPress={() => router.push(`/produit/${produit.id}`)}
+            onPress={() => produit.dispo && router.push(`/produit/${produit.id}`)}
             disabled={!produit.dispo}
           >
             <View style={styles.produitImage} />
@@ -82,13 +82,15 @@ export default function FicheBoutique() {
               <Text style={styles.produitNom}>{produit.nom}</Text>
               <Text style={styles.produitPrix}>{produit.prix}</Text>
             </View>
-            {!produit.dispo && (
+            {!produit.dispo ? (
               <View style={styles.indispoBadge}>
                 <Text style={styles.indispoText}>Indisponible</Text>
               </View>
-            )}
-            {produit.dispo && (
-              <TouchableOpacity style={styles.addBtn}>
+            ) : (
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() => router.push(`/produit/${produit.id}`)}
+              >
                 <Text style={styles.addBtnText}>+</Text>
               </TouchableOpacity>
             )}

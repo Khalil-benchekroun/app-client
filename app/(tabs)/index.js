@@ -1,5 +1,12 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { colors, spacing, radius, shadows, layout } from '../../constants/theme';
+
+const boutiques = [
+  { id: '1', nom: 'Boutique Parisienne', categorie: 'Mode', distance: '800m', delai: '45 min' },
+  { id: '2', nom: 'Maison de Mode', categorie: 'Accessoires', distance: '1,2km', delai: '55 min' },
+  { id: '3', nom: 'Le Concept Store', categorie: 'Lifestyle', distance: '600m', delai: '35 min' },
+];
 
 export default function Accueil() {
   return (
@@ -11,13 +18,13 @@ export default function Accueil() {
           <Text style={styles.logo}>LIVRR</Text>
           <Text style={styles.tagline}>L'élégance du local</Text>
         </View>
-        <TouchableOpacity style={styles.profileBtn}>
+        <TouchableOpacity style={styles.profileBtn} onPress={() => router.push('/(tabs)/profil')}>
           <Text style={styles.profileIcon}>◉</Text>
         </TouchableOpacity>
       </View>
 
       {/* Adresse */}
-      <TouchableOpacity style={styles.addressBar}>
+      <TouchableOpacity style={styles.addressBar} onPress={() => router.push('/adresse')}>
         <Text style={styles.addressIcon}>◎</Text>
         <Text style={styles.addressText}>Où souhaitez-vous être livré ?</Text>
         <Text style={styles.addressArrow}>›</Text>
@@ -44,16 +51,21 @@ export default function Accueil() {
       {/* Boutiques */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Boutiques tendances</Text>
-        {[1, 2, 3].map((i) => (
-          <TouchableOpacity key={i} style={styles.boutiqueCard}>
+        {boutiques.map((boutique) => (
+          <TouchableOpacity
+            key={boutique.id}
+            style={styles.boutiqueCard}
+            onPress={() => router.push(`/boutique/${boutique.id}`)}
+          >
             <View style={styles.boutiqueImage} />
             <View style={styles.boutiqueInfo}>
-              <Text style={styles.boutiqueName}>Boutique {i}</Text>
-              <Text style={styles.boutiqueDetails}>Mode · 800m · 45 min</Text>
+              <Text style={styles.boutiqueName}>{boutique.nom}</Text>
+              <Text style={styles.boutiqueDetails}>{boutique.categorie} · {boutique.distance} · {boutique.delai}</Text>
               <View style={styles.boutiqueBadge}>
                 <Text style={styles.boutiqueBadgeText}>Ouvert</Text>
               </View>
             </View>
+            <Text style={styles.boutiqueArrow}>›</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -174,6 +186,7 @@ const styles = StyleSheet.create({
   },
   boutiqueCard: {
     flexDirection: 'row',
+    alignItems: 'center',
     marginHorizontal: layout.screenPadding,
     marginBottom: spacing.md,
     backgroundColor: colors.card,
@@ -191,7 +204,6 @@ const styles = StyleSheet.create({
   boutiqueInfo: {
     flex: 1,
     padding: spacing.md,
-    justifyContent: 'center',
   },
   boutiqueName: {
     fontSize: 15,
@@ -215,5 +227,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.success,
     fontWeight: '400',
+  },
+  boutiqueArrow: {
+    fontSize: 24,
+    color: colors.textMuted,
+    paddingRight: spacing.md,
   },
 });
