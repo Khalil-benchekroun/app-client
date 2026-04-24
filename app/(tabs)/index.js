@@ -18,9 +18,14 @@ export default function Accueil() {
           <Text style={styles.logo}>LIVRR</Text>
           <Text style={styles.tagline}>L'élégance du local</Text>
         </View>
-        <TouchableOpacity style={styles.profileBtn} onPress={() => router.push('/(tabs)/profil')}>
-          <Text style={styles.profileIcon}>◉</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.carteBtn} onPress={() => router.push('/carte')}>
+            <Text style={styles.carteBtnText}>◎ Carte</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileBtn} onPress={() => router.push('/(tabs)/profil')}>
+            <Text style={styles.profileIcon}>◉</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Adresse */}
@@ -34,6 +39,9 @@ export default function Accueil() {
       <View style={styles.heroBanner}>
         <Text style={styles.heroTitle}>Livraison en moins d'une heure</Text>
         <Text style={styles.heroSub}>Les meilleures boutiques parisiennes, livrées chez vous</Text>
+        <TouchableOpacity style={styles.heroBtn} onPress={() => router.push('/carte')}>
+          <Text style={styles.heroBtnText}>Voir la carte ›</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Catégories */}
@@ -50,7 +58,12 @@ export default function Accueil() {
 
       {/* Boutiques */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Boutiques tendances</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Boutiques tendances</Text>
+          <TouchableOpacity onPress={() => router.push('/carte')}>
+            <Text style={styles.voirTout}>Voir tout ›</Text>
+          </TouchableOpacity>
+        </View>
         {boutiques.map((boutique) => (
           <TouchableOpacity
             key={boutique.id}
@@ -98,6 +111,23 @@ const styles = StyleSheet.create({
     color: colors.gold,
     letterSpacing: 2,
     marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  carteBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundSoft,
+  },
+  carteBtnText: {
+    fontSize: 12,
+    color: colors.textPrimary,
   },
   profileBtn: {
     width: 40,
@@ -155,17 +185,39 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     opacity: 0.7,
     lineHeight: 20,
+    marginBottom: spacing.lg,
+  },
+  heroBtn: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 0.5,
+    borderColor: colors.gold,
+  },
+  heroBtnText: {
+    fontSize: 13,
+    color: colors.gold,
   },
   section: {
     marginBottom: spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: layout.screenPadding,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: 17,
     fontWeight: '400',
     color: colors.textPrimary,
-    paddingHorizontal: layout.screenPadding,
-    marginBottom: spacing.lg,
     letterSpacing: 0.3,
+  },
+  voirTout: {
+    fontSize: 13,
+    color: colors.gold,
   },
   categoriesRow: {
     paddingLeft: layout.screenPadding,
