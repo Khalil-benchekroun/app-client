@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
+import { router } from 'expo-router';
+import { colors, spacing, radius, layout } from '../../constants/theme';
 
 export default function Login() {
   return (
@@ -40,7 +41,10 @@ export default function Login() {
           <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginBtn}>
+        <TouchableOpacity
+          style={styles.loginBtn}
+          onPress={() => router.replace('/(tabs)')}
+        >
           <Text style={styles.loginBtnText}>Se connecter</Text>
         </TouchableOpacity>
 
@@ -50,8 +54,18 @@ export default function Login() {
           <View style={styles.dividerLine} />
         </View>
 
-        <TouchableOpacity style={styles.registerBtn}>
+        <TouchableOpacity
+          style={styles.registerBtn}
+          onPress={() => router.push('/(auth)/inscription')}
+        >
           <Text style={styles.registerBtnText}>Créer un compte</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.skipBtn}
+          onPress={() => router.replace('/(tabs)')}
+        >
+          <Text style={styles.skipBtnText}>Explorer sans compte</Text>
         </TouchableOpacity>
       </View>
 
@@ -160,11 +174,22 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: spacing.md,
   },
   registerBtnText: {
     fontSize: 15,
     fontWeight: '400',
     color: colors.textPrimary,
     letterSpacing: 1,
+  },
+  skipBtn: {
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xxxl,
+  },
+  skipBtnText: {
+    fontSize: 13,
+    color: colors.textMuted,
   },
 });

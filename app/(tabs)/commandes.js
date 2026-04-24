@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
 const commandes = [
-  { id: '1', boutique: 'Boutique Exemple', statut: 'En livraison', montant: '124,00 €', date: "Aujourd'hui 14:32", couleur: '#E8F5E9', textColor: '#2D6A4F' },
-  { id: '2', boutique: 'Maison de Mode', statut: 'Livrée', montant: '89,00 €', date: 'Hier 11:15', couleur: colors.backgroundSoft, textColor: colors.textSecondary },
-  { id: '3', boutique: 'Le Concept Store', statut: 'Livrée', montant: '210,00 €', date: '20 avr. 16:45', couleur: colors.backgroundSoft, textColor: colors.textSecondary },
+  { id: '1', boutique: 'Boutique Parisienne', statut: 'En livraison', montant: '344,90 €', date: "Aujourd'hui 14:32", couleur: '#E8F5E9', textColor: '#2D6A4F', progress: 0.75 },
+  { id: '2', boutique: 'Maison de Mode', statut: 'Livrée', montant: '89,00 €', date: 'Hier 11:15', couleur: colors.backgroundSoft, textColor: colors.textSecondary, progress: 1 },
+  { id: '3', boutique: 'Le Concept Store', statut: 'Livrée', montant: '210,00 €', date: '20 avr. 16:45', couleur: colors.backgroundSoft, textColor: colors.textSecondary, progress: 1 },
 ];
 
 export default function Commandes() {
@@ -19,7 +20,11 @@ export default function Commandes() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>En cours</Text>
         {commandes.filter(c => c.statut === 'En livraison').map((commande) => (
-          <TouchableOpacity key={commande.id} style={styles.card}>
+          <TouchableOpacity
+            key={commande.id}
+            style={styles.card}
+            onPress={() => router.push('/commande/suivi')}
+          >
             <View style={styles.cardHeader}>
               <Text style={styles.boutiqueName}>{commande.boutique}</Text>
               <View style={[styles.badge, { backgroundColor: commande.couleur }]}>
@@ -30,14 +35,13 @@ export default function Commandes() {
               <Text style={styles.date}>{commande.date}</Text>
               <Text style={styles.montant}>{commande.montant}</Text>
             </View>
-            {/* Barre de progression */}
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '60%' }]} />
+              <View style={[styles.progressFill, { width: `${commande.progress * 100}%` }]} />
             </View>
             <View style={styles.progressLabels}>
               <Text style={styles.progressLabel}>Acceptée</Text>
-              <Text style={styles.progressLabel}>En préparation</Text>
-              <Text style={[styles.progressLabel, { color: colors.gold }]}>En livraison</Text>
+              <Text style={styles.progressLabel}>Préparation</Text>
+              <Text style={[styles.progressLabel, { color: colors.gold }]}>Livraison</Text>
               <Text style={styles.progressLabel}>Livrée</Text>
             </View>
           </TouchableOpacity>
@@ -48,7 +52,11 @@ export default function Commandes() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Historique</Text>
         {commandes.filter(c => c.statut === 'Livrée').map((commande) => (
-          <TouchableOpacity key={commande.id} style={styles.card}>
+          <TouchableOpacity
+            key={commande.id}
+            style={styles.card}
+            onPress={() => router.push('/commande/retour')}
+          >
             <View style={styles.cardHeader}>
               <Text style={styles.boutiqueName}>{commande.boutique}</Text>
               <View style={[styles.badge, { backgroundColor: commande.couleur }]}>
@@ -59,6 +67,9 @@ export default function Commandes() {
               <Text style={styles.date}>{commande.date}</Text>
               <Text style={styles.montant}>{commande.montant}</Text>
             </View>
+            <TouchableOpacity style={styles.retourBtn}>
+              <Text style={styles.retourBtnText}>Faire un retour</Text>
+            </TouchableOpacity>
           </TouchableOpacity>
         ))}
       </View>
@@ -78,7 +89,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     letterSpacing: 1,
   },
@@ -92,7 +103,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     paddingHorizontal: layout.screenPadding,
     marginBottom: spacing.md,
@@ -116,7 +127,7 @@ const styles = StyleSheet.create({
   },
   boutiqueName: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
   },
   badge: {
@@ -126,7 +137,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   cardFooter: {
     flexDirection: 'row',
@@ -140,7 +151,7 @@ const styles = StyleSheet.create({
   },
   montant: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
   },
   progressBar: {
@@ -161,5 +172,18 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: 9,
     color: colors.textMuted,
+  },
+  retourBtn: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.full,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+    marginTop: spacing.sm,
+  },
+  retourBtnText: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
 });
