@@ -1,36 +1,96 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { colors } from '../constants/theme';
+import { Tabs } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '../../constants/theme';
 
-export default function RootLayout() {
+function TabIcon({ icon, label, focused }) {
   return (
-    <>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="boutique/[id]" />
-        <Stack.Screen name="produit/[id]" />
-        <Stack.Screen name="commande/recap" />
-        <Stack.Screen name="commande/paiement" />
-        <Stack.Screen name="commande/confirmation" />
-        <Stack.Screen name="commande/suivi" />
-        <Stack.Screen name="commande/retour" />
-        <Stack.Screen name="adresse" />
-        <Stack.Screen name="favoris" />
-        <Stack.Screen name="notifications" />
-        <Stack.Screen name="faq" />
-        <Stack.Screen name="cgu" />
-        <Stack.Screen name="paiements" />
-        <Stack.Screen name="chat" />
-      </Stack>
-    </>
+    <View style={styles.tabItem}>
+      <Text style={[styles.icon, { color: focused ? colors.gold : colors.navInactive }]}>
+        {icon}
+      </Text>
+      <Text style={[styles.label, { color: focused ? colors.gold : colors.navInactive }]} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
   );
 }
+
+export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: colors.navBackground,
+          borderTopWidth: 0,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 8,
+        },
+        tabBarShowLabel: false,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="◎" label="Accueil" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="explorer"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="✦" label="Explorer" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="panier"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="◈" label="Panier" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="commandes"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="◉" label="Commandes" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profil"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="◉" label="Profil" focused={focused} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60,
+    gap: 4,
+  },
+  icon: {
+    fontSize: 18,
+  },
+  label: {
+    fontSize: 9,
+    fontWeight: '400',
+    letterSpacing: 0.3,
+    textAlign: 'center',
+  },
+});

@@ -13,6 +13,7 @@ export default function RootLayout() {
           animation: 'fade',
         }}
       >
+        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="boutique/[id]" />
@@ -20,6 +21,15 @@ export default function RootLayout() {
         <Stack.Screen name="commande/recap" />
         <Stack.Screen name="commande/paiement" />
         <Stack.Screen name="commande/confirmation" />
+        <Stack.Screen name="commande/suivi" />
+        <Stack.Screen name="commande/retour" />
+        <Stack.Screen name="adresse" />
+        <Stack.Screen name="favoris" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="faq" />
+        <Stack.Screen name="cgu" />
+        <Stack.Screen name="paiements" />
+        <Stack.Screen name="chat" />
       </Stack>
     </>
   );
