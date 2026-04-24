@@ -4,7 +4,7 @@ import { colors, spacing, radius, layout, shadows } from '../../constants/theme'
 
 const menuItems = [
   { icon: '◎', label: 'Mes adresses', route: '/adresse' },
-  { icon: '◈', label: 'Moyens de paiement', route: null },
+  { icon: '◈', label: 'Moyens de paiement', route: '/paiements' },
   { icon: '✦', label: 'Mes favoris', route: '/favoris' },
   { icon: '◉', label: 'Notifications', route: '/notifications' },
   { icon: '?', label: 'Aide & FAQ', route: '/faq' },
