@@ -3,12 +3,12 @@ import { router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
 const menuItems = [
-  { icon: '◎', label: 'Mes adresses' },
-  { icon: '◈', label: 'Moyens de paiement' },
-  { icon: '✦', label: 'Mes favoris' },
-  { icon: '◉', label: 'Notifications' },
-  { icon: '?', label: 'Aide & FAQ' },
-  { icon: '§', label: 'CGU / CGV' },
+  { icon: '◎', label: 'Mes adresses', route: '/adresse' },
+  { icon: '◈', label: 'Moyens de paiement', route: null },
+  { icon: '✦', label: 'Mes favoris', route: '/favoris' },
+  { icon: '◉', label: 'Notifications', route: '/notifications' },
+  { icon: '?', label: 'Aide & FAQ', route: '/faq' },
+  { icon: '§', label: 'CGU / CGV', route: '/cgu' },
 ];
 
 export default function Profil() {
@@ -18,7 +18,6 @@ export default function Profil() {
         <Text style={styles.title}>Mon profil</Text>
       </View>
 
-      {/* Avatar */}
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>K</Text>
@@ -30,7 +29,6 @@ export default function Profil() {
         </TouchableOpacity>
       </View>
 
-      {/* Abonnement */}
       <View style={styles.abonnementCard}>
         <View>
           <Text style={styles.abonnementTitle}>LIVRR Free</Text>
@@ -41,16 +39,12 @@ export default function Profil() {
         </TouchableOpacity>
       </View>
 
-      {/* Menu */}
       <View style={styles.menuSection}>
         {menuItems.map((item) => (
           <TouchableOpacity
             key={item.label}
             style={styles.menuItem}
-            onPress={() => {
-              if (item.label === 'Mes favoris') router.push('/favoris');
-              if (item.label === 'Mes adresses') router.push('/adresse');
-            }}
+            onPress={() => item.route && router.push(item.route)}
           >
             <Text style={styles.menuIcon}>{item.icon}</Text>
             <Text style={styles.menuLabel}>{item.label}</Text>
@@ -59,7 +53,6 @@ export default function Profil() {
         ))}
       </View>
 
-      {/* Déconnexion */}
       <TouchableOpacity style={styles.logoutBtn}>
         <Text style={styles.logoutText}>Se déconnecter</Text>
       </TouchableOpacity>
@@ -80,7 +73,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     letterSpacing: 1,
   },
@@ -102,12 +95,12 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 32,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.gold,
   },
   userName: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     marginBottom: 4,
   },
@@ -139,7 +132,7 @@ const styles = StyleSheet.create({
   },
   abonnementTitle: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textLight,
     marginBottom: 4,
   },
@@ -157,7 +150,7 @@ const styles = StyleSheet.create({
   },
   upgradeBtnText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.backgroundDark,
   },
   menuSection: {
