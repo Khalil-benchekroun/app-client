@@ -12,17 +12,33 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.livrr.client"
+      "bundleIdentifier": "com.livrr.client",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "LIVRR utilise votre position pour trouver les boutiques près de vous et calculer les délais de livraison.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "LIVRR utilise votre position pour trouver les boutiques près de vous et calculer les délais de livraison."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.livrr.client"
+      "package": "com.livrr.client",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-router",
-      "expo-location",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "LIVRR utilise votre position pour trouver les boutiques près de vous et calculer les délais de livraison.",
+          "locationAlwaysAndWhenInUsePermission": "LIVRR utilise votre position pour trouver les boutiques près de vous et calculer les délais de livraison.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
       "expo-notifications"
     ],
     "experiments": {
