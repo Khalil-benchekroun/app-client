@@ -1,7 +1,13 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
+
+const CODES_PROMO_VALIDES = {
+  'LIVRR10': { remise: 10, type: 'pourcent', label: '−10%' },
+  'BIENVENUE': { remise: 5, type: 'fixe', label: '−5,00 €' },
+  'VIP2026': { remise: 15, type: 'pourcent', label: '−15%' },
+};
 
 const produitsPanier = [
   { id: '1', nom: 'Robe en soie', taille: 'M', couleur: 'Noir', prix: 245, quantite: 1 },
@@ -25,11 +31,36 @@ const creneaux = [
 export default function Recap() {
   const [modeLivraison, setModeLivraison] = useState('1');
   const [creneauSelectionne, setCreneauSelectionne] = useState(null);
+  const [codePromo, setCodePromo] = useState('');
+  const [promoAppliquee, setPromoAppliquee] = useState(null);
+  const [promoErreur, setPromoErreur] = useState(false);
+
+  const appliquerCode = () => {
+    const code = codePromo.trim().toUpperCase();
+    if (CODES_PROMO_VALIDES[code]) {
+      setPromoAppliquee({ ...CODES_PROMO_VALIDES[code], code });
+      setPromoErreur(false);
+    } else {
+      setPromoErreur(true);
+      setPromoAppliquee(null);
+    }
+  };
+
+  const supprimerPromo = () => {
+    setPromoAppliquee(null);
+    setCodePromo('');
+    setPromoErreur(false);
+  };
 
   const modeSelectionne = modesLivraison.find(m => m.id === modeLivraison);
   const sousTotal = produitsPanier.reduce((acc, p) => acc + p.prix * p.quantite, 0);
   const fraisLivraison = modeSelectionne?.prix || 9.90;
-  const total = sousTotal + fraisLivraison;
+  const remise = promoAppliquee
+    ? promoAppliquee.type === 'pourcent'
+      ? sousTotal * promoAppliquee.remise / 100
+      : promoAppliquee.remise
+    : 0;
+  const total = sousTotal + fraisLivraison - remise;
 
   return (
     <View style={styles.container}>
@@ -130,6 +161,43 @@ export default function Recap() {
           )}
         </View>
 
+        {/* Code promo */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Code promotionnel</Text>
+          {promoAppliquee ? (
+            <View style={styles.promoAppliquee}>
+              <View style={styles.promoAppliqueeLeft}>
+                <Text style={styles.promoAppliqueeCode}>{promoAppliquee.code}</Text>
+                <Text style={styles.promoAppliqueeLabel}>{promoAppliquee.label} appliqué</Text>
+              </View>
+              <TouchableOpacity onPress={supprimerPromo} style={styles.promoSupprBtn}>
+                <Text style={styles.promoSupprBtnText}>×</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.promoRow}>
+              <TextInput
+                style={[styles.promoInput, promoErreur && styles.promoInputErreur]}
+                placeholder="Entrer un code promo"
+                placeholderTextColor={colors.textMuted}
+                value={codePromo}
+                onChangeText={(t) => { setCodePromo(t); setPromoErreur(false); }}
+                autoCapitalize="characters"
+              />
+              <TouchableOpacity
+                style={[styles.promoBtn, !codePromo.trim() && styles.promoBtnDisabled]}
+                onPress={appliquerCode}
+                disabled={!codePromo.trim()}
+              >
+                <Text style={styles.promoBtnText}>Appliquer</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {promoErreur && (
+            <Text style={styles.promoErreur}>Code invalide ou expiré</Text>
+          )}
+        </View>
+
         {/* Résumé prix */}
         <View style={styles.section}>
           <View style={styles.prixRow}>
@@ -140,6 +208,12 @@ export default function Recap() {
             <Text style={styles.prixLabel}>Livraison {modeSelectionne?.label}</Text>
             <Text style={styles.prixValue}>{fraisLivraison.toFixed(2).replace('.', ',')} €</Text>
           </View>
+          {promoAppliquee && (
+            <View style={styles.prixRow}>
+              <Text style={[styles.prixLabel, { color: colors.success }]}>Code {promoAppliquee.code}</Text>
+              <Text style={[styles.prixValue, { color: colors.success }]}>−{remise.toFixed(2).replace('.', ',')} €</Text>
+            </View>
+          )}
           <View style={[styles.prixRow, styles.prixTotal]}>
             <Text style={styles.prixTotalLabel}>Total</Text>
             <Text style={styles.prixTotalValue}>{total.toFixed(2).replace('.', ',')} €</Text>
@@ -467,4 +541,38 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: colors.textLight,
   },
+  promoRow: {
+    flexDirection: 'row', gap: spacing.sm,
+  },
+  promoInput: {
+    flex: 1, height: 48,
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: radius.md, borderWidth: 0.5, borderColor: colors.border,
+    paddingHorizontal: spacing.lg,
+    fontSize: 15, color: colors.textPrimary,
+    letterSpacing: 1,
+  },
+  promoInputErreur: { borderColor: colors.error },
+  promoBtn: {
+    height: 48, paddingHorizontal: spacing.lg,
+    backgroundColor: colors.backgroundDark,
+    borderRadius: radius.md, alignItems: 'center', justifyContent: 'center',
+  },
+  promoBtnDisabled: { opacity: 0.4 },
+  promoBtnText: { fontSize: 14, color: colors.gold, letterSpacing: 0.5 },
+  promoAppliquee: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    padding: spacing.lg, backgroundColor: '#E8F5E9',
+    borderRadius: radius.md, borderWidth: 0.5, borderColor: colors.success,
+  },
+  promoAppliqueeLeft: { flex: 1 },
+  promoAppliqueeCode: { fontSize: 14, fontWeight: '400', color: colors.success, letterSpacing: 1, marginBottom: 2 },
+  promoAppliqueeLabel: { fontSize: 12, color: colors.success, opacity: 0.8 },
+  promoSupprBtn: {
+    width: 32, height: 32, borderRadius: radius.full,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  promoSupprBtnText: { fontSize: 18, color: colors.success, lineHeight: 20 },
+  promoErreur: { fontSize: 12, color: colors.error, marginTop: spacing.sm },
 });
