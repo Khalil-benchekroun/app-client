@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
 const produitsPanier = [
@@ -7,9 +8,27 @@ const produitsPanier = [
   { id: '2', nom: 'Foulard en soie', taille: 'Unique', couleur: 'Or', prix: 95, quantite: 2 },
 ];
 
+const modesLivraison = [
+  { id: '1', label: 'Express < 1h', description: 'Livraison en moins d\'une heure', prix: 9.90, disponible: true },
+  { id: '2', label: 'Aujourd\'hui J0', description: 'Livraison dans la journée', prix: 6.90, disponible: true },
+  { id: '3', label: 'Programmée', description: 'Choisissez votre créneau', prix: 4.90, disponible: true },
+];
+
+const creneaux = [
+  { id: '1', jour: 'Aujourd\'hui', heure: '18h00 – 20h00' },
+  { id: '2', jour: 'Demain', heure: '10h00 – 12h00' },
+  { id: '3', jour: 'Demain', heure: '14h00 – 16h00' },
+  { id: '4', jour: 'Demain', heure: '18h00 – 20h00' },
+  { id: '5', jour: 'Après-demain', heure: '10h00 – 12h00' },
+];
+
 export default function Recap() {
+  const [modeLivraison, setModeLivraison] = useState('1');
+  const [creneauSelectionne, setCreneauSelectionne] = useState(null);
+
+  const modeSelectionne = modesLivraison.find(m => m.id === modeLivraison);
   const sousTotal = produitsPanier.reduce((acc, p) => acc + p.prix * p.quantite, 0);
-  const fraisLivraison = 9.90;
+  const fraisLivraison = modeSelectionne?.prix || 9.90;
   const total = sousTotal + fraisLivraison;
 
   return (
@@ -51,10 +70,10 @@ export default function Recap() {
           ))}
         </View>
 
-        {/* Adresse livraison */}
+        {/* Adresse */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Adresse de livraison</Text>
-          <TouchableOpacity style={styles.adresseCard}>
+          <TouchableOpacity style={styles.adresseCard} onPress={() => router.push('/adresse')}>
             <View style={styles.adresseInfo}>
               <Text style={styles.adresseNom}>Domicile</Text>
               <Text style={styles.adresseText}>12 Rue du Faubourg Saint-Honoré, 75008 Paris</Text>
@@ -66,24 +85,49 @@ export default function Recap() {
         {/* Mode de livraison */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mode de livraison</Text>
-          {[
-            { label: 'Express < 1h', prix: '9,90 €', selected: true },
-            { label: 'Aujourd\'hui J0', prix: '6,90 €', selected: false },
-          ].map((mode) => (
+          {modesLivraison.map((mode) => (
             <TouchableOpacity
-              key={mode.label}
-              style={[styles.livraisonCard, mode.selected && styles.livraisonSelected]}
+              key={mode.id}
+              style={[styles.livraisonCard, modeLivraison === mode.id && styles.livraisonSelected]}
+              onPress={() => {
+                setModeLivraison(mode.id);
+                if (mode.id !== '3') setCreneauSelectionne(null);
+              }}
             >
-              <View>
-                <Text style={[styles.livraisonLabel, mode.selected && styles.livraisonLabelSelected]}>
-                  {mode.label}
-                </Text>
+              <View style={styles.livraisonLeft}>
+                <View style={[styles.livraisonDot, modeLivraison === mode.id && styles.livraisonDotSelected]} />
+                <View>
+                  <Text style={[styles.livraisonLabel, modeLivraison === mode.id && styles.livraisonLabelSelected]}>
+                    {mode.label}
+                  </Text>
+                  <Text style={styles.livraisonDescription}>{mode.description}</Text>
+                </View>
               </View>
-              <Text style={[styles.livraisonPrix, mode.selected && styles.livraisonPrixSelected]}>
-                {mode.prix}
+              <Text style={[styles.livraisonPrix, modeLivraison === mode.id && styles.livraisonPrixSelected]}>
+                {mode.prix.toFixed(2).replace('.', ',')} €
               </Text>
             </TouchableOpacity>
           ))}
+
+          {/* Créneaux programmés */}
+          {modeLivraison === '3' && (
+            <View style={styles.creneauxSection}>
+              <Text style={styles.creneauxTitle}>Choisissez un créneau</Text>
+              {creneaux.map((creneau) => (
+                <TouchableOpacity
+                  key={creneau.id}
+                  style={[styles.creneauCard, creneauSelectionne === creneau.id && styles.creneauCardSelected]}
+                  onPress={() => setCreneauSelectionne(creneau.id)}
+                >
+                  <View style={[styles.creneauDot, creneauSelectionne === creneau.id && styles.creneauDotSelected]} />
+                  <View>
+                    <Text style={styles.creneauJour}>{creneau.jour}</Text>
+                    <Text style={styles.creneauHeure}>{creneau.heure}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Résumé prix */}
@@ -93,7 +137,7 @@ export default function Recap() {
             <Text style={styles.prixValue}>{sousTotal.toFixed(2).replace('.', ',')} €</Text>
           </View>
           <View style={styles.prixRow}>
-            <Text style={styles.prixLabel}>Livraison</Text>
+            <Text style={styles.prixLabel}>Livraison {modeSelectionne?.label}</Text>
             <Text style={styles.prixValue}>{fraisLivraison.toFixed(2).replace('.', ',')} €</Text>
           </View>
           <View style={[styles.prixRow, styles.prixTotal]}>
@@ -107,8 +151,14 @@ export default function Recap() {
       {/* Bouton paiement */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.payBtn}
-          onPress={() => router.push('/commande/paiement')}
+          style={[
+            styles.payBtn,
+            modeLivraison === '3' && !creneauSelectionne && styles.payBtnDisabled
+          ]}
+          onPress={() => {
+            if (modeLivraison === '3' && !creneauSelectionne) return;
+            router.push('/commande/paiement');
+          }}
         >
           <Text style={styles.payBtnText}>Procéder au paiement</Text>
           <Text style={styles.payBtnPrice}>{total.toFixed(2).replace('.', ',')} €</Text>
@@ -268,13 +318,36 @@ const styles = StyleSheet.create({
     borderColor: colors.gold,
     backgroundColor: colors.background,
   },
+  livraisonLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    flex: 1,
+  },
+  livraisonDot: {
+    width: 16,
+    height: 16,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    flexShrink: 0,
+  },
+  livraisonDotSelected: {
+    borderColor: colors.gold,
+    backgroundColor: colors.gold,
+  },
   livraisonLabel: {
     fontSize: 14,
+    fontWeight: '400',
     color: colors.textPrimary,
+    marginBottom: 2,
   },
   livraisonLabelSelected: {
     color: colors.textPrimary,
-    fontWeight: '400',
+  },
+  livraisonDescription: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   livraisonPrix: {
     fontSize: 14,
@@ -282,6 +355,58 @@ const styles = StyleSheet.create({
   },
   livraisonPrixSelected: {
     color: colors.gold,
+    fontWeight: '400',
+  },
+  creneauxSection: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: radius.lg,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+  },
+  creneauxTitle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: spacing.md,
+  },
+  creneauCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.background,
+    gap: spacing.md,
+  },
+  creneauCardSelected: {
+    borderColor: colors.gold,
+  },
+  creneauDot: {
+    width: 14,
+    height: 14,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    flexShrink: 0,
+  },
+  creneauDotSelected: {
+    borderColor: colors.gold,
+    backgroundColor: colors.gold,
+  },
+  creneauJour: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  creneauHeure: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   prixRow: {
     flexDirection: 'row',
@@ -327,6 +452,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundDark,
     padding: spacing.lg,
     borderRadius: radius.md,
+  },
+  payBtnDisabled: {
+    opacity: 0.4,
   },
   payBtnText: {
     fontSize: 15,

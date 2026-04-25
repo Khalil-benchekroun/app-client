@@ -53,7 +53,10 @@ export default function FAQ() {
         <View style={styles.savSection}>
           <Text style={styles.savTitle}>Besoin d'aide ?</Text>
           <Text style={styles.savSub}>Notre équipe est disponible 7j/7 de 9h à 20h</Text>
-          <TouchableOpacity style={styles.savBtn}>
+          <TouchableOpacity
+            style={styles.savBtn}
+            onPress={() => router.push('/contact')}
+          >
             <Text style={styles.savBtnText}>Contacter le SAV</Text>
           </TouchableOpacity>
         </View>

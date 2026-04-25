@@ -1,51 +1,131 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { colors, spacing, radius, layout } from '../../constants/theme';
 
+const boutiques = [
+  { id: '1', nom: 'Boutique Parisienne', categorie: 'Mode', distance: 0.8, delai: '45 min', ouvert: true, nouveaute: false },
+  { id: '2', nom: 'Maison de Mode', categorie: 'Accessoires', distance: 1.2, delai: '55 min', ouvert: true, nouveaute: true },
+  { id: '3', nom: 'Le Concept Store', categorie: 'Lifestyle', distance: 0.6, delai: '35 min', ouvert: false, nouveaute: false },
+  { id: '4', nom: 'Épicerie du Marais', categorie: 'Épicerie fine', distance: 0.95, delai: '50 min', ouvert: true, nouveaute: true },
+  { id: '5', nom: 'Beauté Dorée', categorie: 'Beauté', distance: 1.5, delai: '60 min', ouvert: true, nouveaute: false },
+];
+
+const categories = ['Toutes', 'Mode', 'Beauté', 'Accessoires', 'Épicerie fine', 'Lifestyle'];
+const tris = ['Distance', 'Popularité', 'Nouveautés'];
+
 export default function Explorer() {
-  const sections = [
-    { titre: 'Mode', items: ['Robes', 'Manteaux', 'Chaussures', 'Sacs'] },
-    { titre: 'Beauté', items: ['Soins', 'Parfums', 'Maquillage'] },
-    { titre: 'Lifestyle', items: ['Épicerie fine', 'Déco', 'Cadeaux'] },
-  ];
+  const [categorieActive, setCategorieActive] = useState('Toutes');
+  const [triActif, setTriActif] = useState('Distance');
+  const [ouvertSeulement, setOuvertSeulement] = useState(false);
+
+  const boutiquesFiltrees = boutiques
+    .filter(b => categorieActive === 'Toutes' || b.categorie === categorieActive)
+    .filter(b => !ouvertSeulement || b.ouvert)
+    .sort((a, b) => {
+      if (triActif === 'Distance') return a.distance - b.distance;
+      if (triActif === 'Nouveautés') return b.nouveaute - a.nouveaute;
+      return 0;
+    });
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Explorer</Text>
-        <Text style={styles.subtitle}>Découvrez nos boutiques partenaires</Text>
-      </View>
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      {/* Recherche */}
-      <TouchableOpacity style={styles.searchBar}>
-        <Text style={styles.searchIcon}>✦</Text>
-        <Text style={styles.searchText}>Rechercher un produit, une boutique...</Text>
-      </TouchableOpacity>
-
-      {/* Sélections */}
-      <View style={styles.selectionsRow}>
-        {['Nouveautés', 'Coups de cœur', 'Tendances'].map((s) => (
-          <TouchableOpacity key={s} style={styles.selectionCard}>
-            <View style={styles.selectionImage} />
-            <Text style={styles.selectionLabel}>{s}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Sections par catégorie */}
-      {sections.map((section) => (
-        <View key={section.titre} style={styles.section}>
-          <Text style={styles.sectionTitle}>{section.titre}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.itemsRow}>
-            {section.items.map((item) => (
-              <TouchableOpacity key={item} style={styles.itemCard}>
-                <View style={styles.itemImage} />
-                <Text style={styles.itemLabel}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Explorer</Text>
+          <Text style={styles.subtitle}>Boutiques livrables à votre adresse</Text>
         </View>
-      ))}
-    </ScrollView>
+
+        {/* Recherche */}
+        <TouchableOpacity style={styles.searchBar}>
+          <Text style={styles.searchIcon}>✦</Text>
+          <Text style={styles.searchText}>Rechercher un produit, une boutique...</Text>
+        </TouchableOpacity>
+
+        {/* Catégories */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesRow}>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.categoryChip, categorieActive === cat && styles.categoryChipActive]}
+              onPress={() => setCategorieActive(cat)}
+            >
+              <Text style={[styles.categoryText, categorieActive === cat && styles.categoryTextActive]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Filtres & Tri */}
+        <View style={styles.filtresRow}>
+          <TouchableOpacity
+            style={[styles.filtreBtn, ouvertSeulement && styles.filtreBtnActive]}
+            onPress={() => setOuvertSeulement(!ouvertSeulement)}
+          >
+            <Text style={[styles.filtreBtnText, ouvertSeulement && styles.filtreBtnTextActive]}>
+              ◎ Ouvert
+            </Text>
+          </TouchableOpacity>
+
+          {tris.map((tri) => (
+            <TouchableOpacity
+              key={tri}
+              style={[styles.filtreBtn, triActif === tri && styles.filtreBtnActive]}
+              onPress={() => setTriActif(tri)}
+            >
+              <Text style={[styles.filtreBtnText, triActif === tri && styles.filtreBtnTextActive]}>
+                {tri}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Résultats */}
+        <View style={styles.section}>
+          <Text style={styles.resultats}>{boutiquesFiltrees.length} boutique{boutiquesFiltrees.length > 1 ? 's' : ''}</Text>
+          {boutiquesFiltrees.map((boutique) => (
+            <TouchableOpacity
+              key={boutique.id}
+              style={[styles.boutiqueCard, !boutique.ouvert && styles.boutiqueCardFermee]}
+              onPress={() => boutique.ouvert && router.push(`/boutique/${boutique.id}`)}
+            >
+              <View style={styles.boutiqueImage}>
+                {boutique.nouveaute && (
+                  <View style={styles.nouveauteBadge}>
+                    <Text style={styles.nouveauteText}>Nouveau</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.boutiqueInfo}>
+                <View style={styles.boutiqueHeader}>
+                  <Text style={styles.boutiqueName}>{boutique.nom}</Text>
+                  <Text style={styles.boutiqueDistance}>{boutique.distance}km</Text>
+                </View>
+                <Text style={styles.boutiqueCategorie}>{boutique.categorie}</Text>
+                <View style={styles.boutiqueFooter}>
+                  <View style={[
+                    styles.statutBadge,
+                    { backgroundColor: boutique.ouvert ? '#E8F5E9' : colors.backgroundSoft }
+                  ]}>
+                    <Text style={[
+                      styles.statutText,
+                      { color: boutique.ouvert ? colors.success : colors.textMuted }
+                    ]}>
+                      {boutique.ouvert ? `◎ ${boutique.delai}` : 'Fermé'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+      </ScrollView>
+    </View>
   );
 }
 
@@ -61,7 +141,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '500',
+    fontWeight: '400',
     color: colors.textPrimary,
     letterSpacing: 1,
   },
@@ -79,7 +159,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 0.5,
     borderColor: colors.border,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   searchIcon: {
     fontSize: 14,
@@ -90,60 +170,139 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
   },
-  selectionsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: layout.screenPadding,
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
+  categoriesRow: {
+    paddingLeft: layout.screenPadding,
+    marginBottom: spacing.md,
   },
-  selectionCard: {
-    flex: 1,
-    borderRadius: radius.md,
-    overflow: 'hidden',
+  categoryChip: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: radius.full,
+    marginRight: spacing.sm,
     borderWidth: 0.5,
     borderColor: colors.border,
   },
-  selectionImage: {
-    height: 80,
+  categoryChipActive: {
+    backgroundColor: colors.backgroundDark,
+    borderColor: colors.backgroundDark,
+  },
+  categoryText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  categoryTextActive: {
+    color: colors.gold,
+  },
+  filtresRow: {
+    flexDirection: 'row',
+    paddingHorizontal: layout.screenPadding,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  filtreBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.full,
+    borderWidth: 0.5,
+    borderColor: colors.border,
     backgroundColor: colors.backgroundSoft,
   },
-  selectionLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: colors.textPrimary,
-    padding: spacing.sm,
-    letterSpacing: 0.3,
+  filtreBtnActive: {
+    backgroundColor: colors.gold,
+    borderColor: colors.gold,
+  },
+  filtreBtnText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  filtreBtnTextActive: {
+    color: colors.backgroundDark,
+    fontWeight: '400',
   },
   section: {
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '500',
-    color: colors.textPrimary,
     paddingHorizontal: layout.screenPadding,
+  },
+  resultats: {
+    fontSize: 13,
+    color: colors.textSecondary,
     marginBottom: spacing.md,
     letterSpacing: 0.3,
   },
-  itemsRow: {
-    paddingLeft: layout.screenPadding,
-  },
-  itemCard: {
-    width: 110,
-    marginRight: spacing.md,
-    borderRadius: radius.md,
-    overflow: 'hidden',
+  boutiqueCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
     borderWidth: 0.5,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
-  itemImage: {
-    height: 110,
+  boutiqueCardFermee: {
+    opacity: 0.5,
+  },
+  boutiqueImage: {
+    width: 90,
+    height: 90,
     backgroundColor: colors.backgroundSoft,
+    justifyContent: 'flex-end',
+    padding: spacing.xs,
   },
-  itemLabel: {
-    fontSize: 12,
+  nouveauteBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    backgroundColor: colors.gold,
+    borderRadius: radius.sm,
+  },
+  nouveauteText: {
+    fontSize: 9,
+    color: colors.backgroundDark,
+    fontWeight: '400',
+  },
+  boutiqueInfo: {
+    flex: 1,
+    padding: spacing.md,
+  },
+  boutiqueHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  boutiqueName: {
+    fontSize: 14,
+    fontWeight: '400',
     color: colors.textPrimary,
-    padding: spacing.sm,
+    flex: 1,
+  },
+  boutiqueDistance: {
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  boutiqueCategorie: {
+    fontSize: 12,
+    color: colors.gold,
     letterSpacing: 0.3,
+    marginBottom: spacing.sm,
+  },
+  boutiqueFooter: {
+    flexDirection: 'row',
+  },
+  statutBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
+  statutText: {
+    fontSize: 11,
+    fontWeight: '400',
+  },
+  arrow: {
+    fontSize: 20,
+    color: colors.textMuted,
+    paddingRight: spacing.md,
   },
 });

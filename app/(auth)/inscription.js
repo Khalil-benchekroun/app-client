@@ -1,7 +1,23 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { colors, spacing, radius, layout } from '../../constants/theme';
 
 export default function Inscription() {
+  const [cguAccepted, setCguAccepted] = useState(false);
+  const [dateNaissance, setDateNaissance] = useState('');
+
+  const formatDate = (text) => {
+    const cleaned = text.replace(/\D/g, '');
+    let formatted = cleaned;
+    if (cleaned.length >= 3 && cleaned.length <= 4) {
+      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+    } else if (cleaned.length >= 5) {
+      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4) + '/' + cleaned.slice(4, 8);
+    }
+    setDateNaissance(formatted);
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
@@ -62,6 +78,9 @@ export default function Inscription() {
             placeholder="JJ/MM/AAAA"
             placeholderTextColor={colors.textMuted}
             keyboardType="numeric"
+            value={dateNaissance}
+            onChangeText={formatDate}
+            maxLength={10}
           />
         </View>
 
@@ -86,18 +105,32 @@ export default function Inscription() {
         </View>
 
         {/* CGU */}
-        <TouchableOpacity style={styles.cguRow}>
-          <View style={styles.checkbox} />
+        <TouchableOpacity
+          style={styles.cguRow}
+          onPress={() => setCguAccepted(!cguAccepted)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.checkbox, cguAccepted && styles.checkboxChecked]}>
+            {cguAccepted && <Text style={styles.checkmark}>✓</Text>}
+          </View>
           <Text style={styles.cguText}>
-            J'accepte les <Text style={styles.cguLink}>CGU</Text> et la <Text style={styles.cguLink}>politique de confidentialité</Text>
+            J'accepte les <Text style={styles.cguLink}>CGU</Text> et la{' '}
+            <Text style={styles.cguLink}>politique de confidentialité</Text>
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.registerBtn}>
+        <TouchableOpacity
+          style={[styles.registerBtn, !cguAccepted && styles.registerBtnDisabled]}
+          onPress={() => cguAccepted && router.replace('/(tabs)')}
+          activeOpacity={cguAccepted ? 0.8 : 1}
+        >
           <Text style={styles.registerBtnText}>Créer mon compte</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginBtn}>
+        <TouchableOpacity
+          style={styles.loginBtn}
+          onPress={() => router.push('/(auth)/login')}
+        >
           <Text style={styles.loginBtnText}>Déjà un compte ? Se connecter</Text>
         </TouchableOpacity>
 
@@ -174,12 +207,25 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderWidth: 0.5,
+    width: 22,
+    height: 22,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 4,
-    marginTop: 2,
+    marginTop: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundSoft,
+    flexShrink: 0,
+  },
+  checkboxChecked: {
+    backgroundColor: colors.backgroundDark,
+    borderColor: colors.gold,
+  },
+  checkmark: {
+    fontSize: 13,
+    color: colors.gold,
+    fontWeight: '400',
   },
   cguText: {
     flex: 1,
@@ -197,6 +243,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
+  },
+  registerBtnDisabled: {
+    opacity: 0.4,
   },
   registerBtnText: {
     fontSize: 15,

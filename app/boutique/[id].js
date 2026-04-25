@@ -11,6 +11,24 @@ const produits = [
   { id: '6', nom: 'Crème visage luxe', prix: '180,00 €', categorie: 'Beauté', dispo: true },
 ];
 
+const avis = [
+  { id: '1', auteur: 'Sophie M.', note: 5, commentaire: 'Livraison ultra rapide, produits conformes. Je recommande vivement !', date: 'Il y a 2 jours' },
+  { id: '2', auteur: 'Thomas L.', note: 4, commentaire: 'Très bonne expérience, emballage soigné. Légèrement en retard sur le délai annoncé.', date: 'Il y a 5 jours' },
+  { id: '3', auteur: 'Marie C.', note: 5, commentaire: 'Boutique exceptionnelle, service client impeccable.', date: 'Il y a 1 semaine' },
+];
+
+function Etoiles({ note }) {
+  return (
+    <View style={{ flexDirection: 'row', gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Text key={i} style={{ fontSize: 12, color: i <= note ? colors.gold : colors.border }}>
+          ✦
+        </Text>
+      ))}
+    </View>
+  );
+}
+
 export default function FicheBoutique() {
   const { id } = useLocalSearchParams();
 
@@ -55,6 +73,11 @@ export default function FicheBoutique() {
             <Text style={styles.statValue}>4,8 ✦</Text>
             <Text style={styles.statLabel}>Note</Text>
           </View>
+          <View style={styles.statDivider} />
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>127</Text>
+            <Text style={styles.statLabel}>Avis</Text>
+          </View>
         </View>
 
         {/* Horaires */}
@@ -65,10 +88,28 @@ export default function FicheBoutique() {
         </View>
       </View>
 
+      {/* Sélection du commerçant */}
+      <View style={styles.selectionSection}>
+        <Text style={styles.sectionTitle}>Sélection du moment</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {produits.filter(p => p.dispo).slice(0, 3).map((produit) => (
+            <TouchableOpacity
+              key={produit.id}
+              style={styles.selectionCard}
+              onPress={() => router.push(`/produit/${produit.id}`)}
+            >
+              <View style={styles.selectionImage} />
+              <Text style={styles.selectionCategorie}>{produit.categorie}</Text>
+              <Text style={styles.selectionNom} numberOfLines={1}>{produit.nom}</Text>
+              <Text style={styles.selectionPrix}>{produit.prix}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       {/* Produits */}
       <View style={styles.produitsSection}>
-        <Text style={styles.sectionTitle}>Produits disponibles</Text>
-
+        <Text style={styles.sectionTitle}>Tous les produits</Text>
         {produits.map((produit) => (
           <TouchableOpacity
             key={produit.id}
@@ -98,6 +139,34 @@ export default function FicheBoutique() {
         ))}
       </View>
 
+      {/* Avis */}
+      <View style={styles.avisSection}>
+        <View style={styles.avisTitre}>
+          <Text style={styles.sectionTitle}>Avis clients</Text>
+          <View style={styles.noteGlobale}>
+            <Text style={styles.noteGlobaleValeur}>4,8</Text>
+            <Etoiles note={5} />
+            <Text style={styles.noteGlobaleCount}>127 avis</Text>
+          </View>
+        </View>
+
+        {avis.map((avis) => (
+          <View key={avis.id} style={styles.avisCard}>
+            <View style={styles.avisHeader}>
+              <View style={styles.avisAvatar}>
+                <Text style={styles.avisAvatarText}>{avis.auteur[0]}</Text>
+              </View>
+              <View style={styles.avisInfo}>
+                <Text style={styles.avisAuteur}>{avis.auteur}</Text>
+                <Etoiles note={avis.note} />
+              </View>
+              <Text style={styles.avisDate}>{avis.date}</Text>
+            </View>
+            <Text style={styles.avisCommentaire}>{avis.commentaire}</Text>
+          </View>
+        ))}
+      </View>
+
     </ScrollView>
   );
 }
@@ -110,8 +179,6 @@ const styles = StyleSheet.create({
   coverImage: {
     height: 220,
     backgroundColor: colors.backgroundSoft,
-    justifyContent: 'flex-end',
-    padding: layout.screenPadding,
   },
   backBtn: {
     position: 'absolute',
@@ -191,13 +258,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '400',
     color: colors.textPrimary,
     marginBottom: 2,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textSecondary,
   },
   statDivider: {
@@ -224,8 +291,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 2,
   },
-  produitsSection: {
+  selectionSection: {
     padding: layout.screenPadding,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
   },
   sectionTitle: {
     fontSize: 17,
@@ -233,6 +302,43 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     letterSpacing: 0.3,
     marginBottom: spacing.lg,
+  },
+  selectionCard: {
+    width: 140,
+    marginRight: spacing.md,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    borderWidth: 0.5,
+    borderColor: colors.border,
+  },
+  selectionImage: {
+    height: 140,
+    backgroundColor: colors.backgroundSoft,
+  },
+  selectionCategorie: {
+    fontSize: 10,
+    color: colors.gold,
+    padding: spacing.sm,
+    paddingBottom: 2,
+    letterSpacing: 0.5,
+  },
+  selectionNom: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: colors.textPrimary,
+    paddingHorizontal: spacing.sm,
+    marginBottom: 2,
+  },
+  selectionPrix: {
+    fontSize: 13,
+    color: colors.textPrimary,
+    padding: spacing.sm,
+    paddingTop: 2,
+  },
+  produitsSection: {
+    padding: layout.screenPadding,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
   },
   produitCard: {
     flexDirection: 'row',
@@ -298,5 +404,72 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.gold,
     lineHeight: 22,
+  },
+  avisSection: {
+    padding: layout.screenPadding,
+    paddingBottom: spacing.xxxl,
+  },
+  avisTitre: {
+    marginBottom: spacing.lg,
+  },
+  noteGlobale: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  noteGlobaleValeur: {
+    fontSize: 24,
+    fontWeight: '400',
+    color: colors.textPrimary,
+  },
+  noteGlobaleCount: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  avisCard: {
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: radius.lg,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+  },
+  avisHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  avisAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.full,
+    backgroundColor: colors.backgroundDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  avisAvatarText: {
+    fontSize: 15,
+    color: colors.gold,
+    fontWeight: '400',
+  },
+  avisInfo: {
+    flex: 1,
+  },
+  avisAuteur: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  avisDate: {
+    fontSize: 11,
+    color: colors.textMuted,
+  },
+  avisCommentaire: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
 });
