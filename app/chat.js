@@ -1,44 +1,126 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
-import { router } from 'expo-router';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
+} from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState, useRef } from 'react';
 import { colors, spacing, radius, layout } from '../constants/theme';
 
-const messages = [
-  { id: '1', texte: 'Bonjour, votre commande est en cours de préparation.', expediteur: 'boutique', heure: '14:38' },
-  { id: '2', texte: 'Merci ! Combien de temps encore ?', expediteur: 'client', heure: '14:39' },
-  { id: '3', texte: 'Environ 10 minutes. Le livreur sera là vers 15h20.', expediteur: 'boutique', heure: '14:40' },
-  { id: '4', texte: 'Parfait, merci beaucoup !', expediteur: 'client', heure: '14:41' },
+// Messages SAV (existant)
+const messagesSAV = [
+  { id: '1', texte: 'Bonjour, comment puis-je vous aider ?', expediteur: 'marque', heure: '14:38' },
+  { id: '2', texte: 'J\'ai un problème avec ma livraison.', expediteur: 'client', heure: '14:39' },
+  { id: '3', texte: 'Je comprends. Pouvez-vous me donner votre numéro de commande ?', expediteur: 'marque', heure: '14:40' },
+];
+
+// Messages boutique (nouveau)
+const messagesBoutique = [
+  { id: '1', texte: 'Bonjour ! Bienvenue chez nous. Comment puis-je vous aider ?', expediteur: 'marque', heure: '14:38' },
+  { id: '2', texte: 'Avez-vous ce sac en noir ?', expediteur: 'client', heure: '14:39' },
+  { id: '3', texte: 'Oui, le sac cuir naturel est disponible en noir et en cognac. Je vous envoie les photos.', expediteur: 'marque', heure: '14:40' },
 ];
 
 export default function Chat() {
+  const params = useLocalSearchParams();
+  const type = params.type || 'sav'; // 'boutique' ou 'sav'
+  const boutiqueName = params.boutiqueName || 'Boutique Parisienne';
+  const boutiqueId = params.boutiqueId;
+
+  const isBoutique = type === 'boutique';
+
+  const headerTitle = isBoutique ? boutiqueName : 'Service Client LIVRR';
+  const headerSub = isBoutique ? 'Répond généralement en quelques minutes' : 'Lun–Dim · 9h – 20h · Réponse sous 2h';
+  const avatarLetter = isBoutique ? boutiqueName[0] : 'L';
+  const messages = isBoutique ? messagesBoutique : messagesSAV;
+
+  const [inputMessage, setInputMessage] = useState('');
+  const [messagesList, setMessagesList] = useState(messages);
+  const scrollRef = useRef(null);
+
+  const sendMessage = () => {
+    if (!inputMessage.trim()) return;
+    const newMsg = {
+      id: String(messagesList.length + 1),
+      texte: inputMessage.trim(),
+      expediteur: 'client',
+      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setMessagesList(prev => [...prev, newMsg]);
+    setInputMessage('');
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <StatusBar barStyle="dark-content" />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backIcon}>‹</Text>
         </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle}>Boutique Parisienne</Text>
-          <Text style={styles.headerSub}>En ligne</Text>
+
+        <View style={styles.headerCenter}>
+          <View style={[styles.headerAvatar, isBoutique && styles.headerAvatarBoutique]}>
+            <Text style={styles.headerAvatarText}>{avatarLetter}</Text>
+          </View>
+          <View style={styles.headerInfo}>
+            <Text style={styles.headerTitle} numberOfLines={1}>{headerTitle}</Text>
+            <View style={styles.headerSubRow}>
+              <View style={[styles.onlineDot, !isBoutique && styles.onlineDotSAV]} />
+              <Text style={styles.headerSub} numberOfLines={1}>{headerSub}</Text>
+            </View>
+          </View>
         </View>
-        <View style={{ width: 40 }} />
+
+        {/* Bouton infos boutique si type boutique */}
+        {isBoutique ? (
+          <TouchableOpacity
+            style={styles.headerAction}
+            onPress={() => boutiqueId && router.push(`/boutique/${boutiqueId}`)}
+          >
+            <Text style={styles.headerActionIcon}>ℹ</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 40 }} />
+        )}
       </View>
+
+      {/* Bandeau contextuel */}
+      {isBoutique && (
+        <View style={styles.contextBanner}>
+          <Text style={styles.contextBannerIcon}>◎</Text>
+          <Text style={styles.contextBannerText}>
+            Vous contactez directement la boutique — pour toute question sur vos commandes LIVRR, utilisez le{' '}
+            <Text style={styles.contextBannerLink} onPress={() => router.push('/contact')}>SAV LIVRR</Text>
+          </Text>
+        </View>
+      )}
 
       {/* Messages */}
       <ScrollView
+        ref={scrollRef}
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContent}
         showsVerticalScrollIndicator={false}
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
       >
         {/* Date */}
         <View style={styles.dateRow}>
           <Text style={styles.dateText}>Aujourd'hui</Text>
         </View>
 
-        {messages.map((message) => (
+        {messagesList.map((message) => (
           <View
             key={message.id}
             style={[
@@ -46,14 +128,16 @@ export default function Chat() {
               message.expediteur === 'client' && styles.messageRowClient,
             ]}
           >
-            {message.expediteur === 'boutique' && (
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>B</Text>
+            {message.expediteur === 'marque' && (
+              <View style={[styles.avatar, isBoutique && styles.avatarBoutique]}>
+                <Text style={styles.avatarText}>{avatarLetter}</Text>
               </View>
             )}
             <View style={[
               styles.messageBubble,
-              message.expediteur === 'client' ? styles.messageBubbleClient : styles.messageBubbleBoutique,
+              message.expediteur === 'client'
+                ? styles.messageBubbleClient
+                : styles.messageBubbleMarque,
             ]}>
               <Text style={[
                 styles.messageTexte,
@@ -76,11 +160,18 @@ export default function Chat() {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Écrire un message..."
+          placeholder={isBoutique ? 'Écrire à la boutique...' : 'Écrire au service client...'}
           placeholderTextColor={colors.textMuted}
           multiline
+          value={inputMessage}
+          onChangeText={setInputMessage}
+          onSubmitEditing={sendMessage}
         />
-        <TouchableOpacity style={styles.sendBtn}>
+        <TouchableOpacity
+          style={[styles.sendBtn, !inputMessage.trim() && styles.sendBtnDisabled]}
+          onPress={sendMessage}
+          disabled={!inputMessage.trim()}
+        >
           <Text style={styles.sendBtnText}>›</Text>
         </TouchableOpacity>
       </View>
@@ -109,24 +200,101 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   backIcon: {
     fontSize: 24,
     color: colors.textPrimary,
   },
-  headerInfo: {
+  headerCenter: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  headerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.full,
+    backgroundColor: colors.backgroundDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  headerAvatarBoutique: {
+    backgroundColor: colors.backgroundDark,
+    borderWidth: 1,
+    borderColor: colors.gold,
+  },
+  headerAvatarText: {
+    fontSize: 15,
+    color: colors.gold,
+    fontWeight: '400',
+  },
+  headerInfo: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '400',
     color: colors.textPrimary,
     letterSpacing: 0.3,
   },
-  headerSub: {
-    fontSize: 12,
-    color: colors.success,
+  headerSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginTop: 2,
+  },
+  onlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: radius.full,
+    backgroundColor: colors.success,
+  },
+  onlineDotSAV: {
+    backgroundColor: colors.gold,
+  },
+  headerSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    flex: 1,
+  },
+  headerAction: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerActionIcon: {
+    fontSize: 18,
+    color: colors.textSecondary,
+  },
+  contextBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: layout.screenPadding,
+    paddingVertical: spacing.md,
+    backgroundColor: '#FDF8F0',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#F0E8D5',
+    gap: spacing.sm,
+  },
+  contextBannerIcon: {
+    fontSize: 13,
+    color: colors.gold,
+    marginTop: 1,
+  },
+  contextBannerText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  contextBannerLink: {
+    color: colors.gold,
+    textDecorationLine: 'underline',
   },
   messagesContainer: {
     flex: 1,
@@ -165,6 +333,10 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
     flexShrink: 0,
   },
+  avatarBoutique: {
+    borderWidth: 1,
+    borderColor: colors.gold,
+  },
   avatarText: {
     fontSize: 13,
     color: colors.gold,
@@ -175,7 +347,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.lg,
   },
-  messageBubbleBoutique: {
+  messageBubbleMarque: {
     backgroundColor: colors.backgroundSoft,
     borderBottomLeftRadius: 4,
     borderWidth: 0.5,
@@ -233,6 +405,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundDark,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sendBtnDisabled: {
+    opacity: 0.4,
   },
   sendBtnText: {
     fontSize: 24,

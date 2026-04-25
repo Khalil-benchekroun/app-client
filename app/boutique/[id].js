@@ -167,6 +167,42 @@ export default function FicheBoutique() {
         ))}
       </View>
 
+      {/* Contacter la boutique */}
+      <View style={styles.contactSection}>
+        <Text style={styles.sectionTitle}>Une question ?</Text>
+        <TouchableOpacity
+          style={styles.contactBtn}
+          onPress={() =>
+            router.push({
+              pathname: '/chat',
+              params: {
+                type: 'boutique',
+                boutiqueName: 'Boutique Parisienne',
+                boutiqueId: id,
+              },
+            })
+          }
+        >
+          <View style={styles.contactBtnLeft}>
+            <View style={styles.contactBtnIcon}>
+              <Text style={styles.contactBtnIconText}>✦</Text>
+            </View>
+            <View>
+              <Text style={styles.contactBtnTitle}>Contacter la boutique</Text>
+              <Text style={styles.contactBtnSub}>Réponse en quelques minutes</Text>
+            </View>
+          </View>
+          <Text style={styles.contactBtnArrow}>›</Text>
+        </TouchableOpacity>
+
+        <View style={styles.contactInfo}>
+          <Text style={styles.contactInfoIcon}>◎</Text>
+          <Text style={styles.contactInfoText}>
+            Posez vos questions directement à la boutique — disponibilité, taille, matière, délai...
+          </Text>
+        </View>
+      </View>
+
     </ScrollView>
   );
 }
@@ -407,7 +443,9 @@ const styles = StyleSheet.create({
   },
   avisSection: {
     padding: layout.screenPadding,
-    paddingBottom: spacing.xxxl,
+    paddingBottom: spacing.xl,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
   },
   avisTitre: {
     marginBottom: spacing.lg,
@@ -471,5 +509,73 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  contactSection: {
+    padding: layout.screenPadding,
+    paddingBottom: spacing.xxxl,
+  },
+  contactBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.lg,
+    backgroundColor: colors.backgroundDark,
+    borderRadius: radius.lg,
+    marginBottom: spacing.md,
+  },
+  contactBtnLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  contactBtnIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactBtnIconText: {
+    fontSize: 14,
+    color: colors.gold,
+  },
+  contactBtnTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: colors.textLight,
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  contactBtnSub: {
+    fontSize: 12,
+    color: colors.gold,
+    opacity: 0.8,
+  },
+  contactBtnArrow: {
+    fontSize: 22,
+    color: colors.gold,
+  },
+  contactInfo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    padding: spacing.md,
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: radius.md,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+  },
+  contactInfoIcon: {
+    fontSize: 13,
+    color: colors.gold,
+    marginTop: 1,
+  },
+  contactInfoText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
 });

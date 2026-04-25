@@ -38,9 +38,26 @@ export default function Contact() {
           </View>
         </View>
 
+        {/* Chat rapide */}
+        <TouchableOpacity
+          style={styles.chatRapideBtn}
+          onPress={() => router.push({ pathname: '/chat', params: { type: 'sav' } })}
+        >
+          <View style={styles.chatRapideBtnLeft}>
+            <View style={styles.chatRapideIcon}>
+              <Text style={styles.chatRapideIconText}>✦</Text>
+            </View>
+            <View>
+              <Text style={styles.chatRapideTitle}>Chat en direct</Text>
+              <Text style={styles.chatRapideSub}>Réponse immédiate · Disponible maintenant</Text>
+            </View>
+          </View>
+          <Text style={styles.chatRapideArrow}>›</Text>
+        </TouchableOpacity>
+
         {/* Sujet */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sujet de votre demande</Text>
+          <Text style={styles.sectionTitle}>Ou envoyez-nous un message</Text>
           {sujets.map((sujet) => (
             <TouchableOpacity
               key={sujet.id}
@@ -138,6 +155,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     margin: layout.screenPadding,
+    marginBottom: spacing.sm,
     padding: spacing.lg,
     backgroundColor: '#E8F5E9',
     borderRadius: radius.lg,
@@ -287,5 +305,49 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: colors.gold,
     letterSpacing: 1,
+  },
+  chatRapideBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: layout.screenPadding,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.backgroundDark,
+    borderRadius: radius.lg,
+  },
+  chatRapideBtnLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  chatRapideIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatRapideIconText: {
+    fontSize: 14,
+    color: colors.gold,
+  },
+  chatRapideTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: colors.textLight,
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  chatRapideSub: {
+    fontSize: 12,
+    color: colors.gold,
+    opacity: 0.8,
+  },
+  chatRapideArrow: {
+    fontSize: 22,
+    color: colors.gold,
   },
 });
