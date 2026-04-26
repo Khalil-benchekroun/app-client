@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 const menuItems = [
   { icon: '◎', label: 'Mes adresses', route: '/adresse' },
@@ -18,6 +19,26 @@ const menuItems = [
 ];
 
 export default function Profil() {
+  const { user, isLoggedIn, displayName, initiale, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Se déconnecter ?',
+      'Vous devrez vous reconnecter pour accéder à votre compte.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Se déconnecter',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/login');
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
@@ -25,19 +46,30 @@ export default function Profil() {
         <Text style={styles.title}>Mon profil</Text>
       </View>
 
-      {/* Avatar */}
+      {/* Avatar + infos */}
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>K</Text>
+          <Text style={styles.avatarText}>{initiale}</Text>
         </View>
-        <Text style={styles.userName}>Khalil</Text>
-        <Text style={styles.userEmail}>benchekrounkhalil10@gmail.com</Text>
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => router.push('/edit-profil')}
-        >
-          <Text style={styles.editBtnText}>Modifier le profil</Text>
-        </TouchableOpacity>
+        <Text style={styles.userName}>{displayName}</Text>
+        {user?.email ? (
+          <Text style={styles.userEmail}>{user.email}</Text>
+        ) : null}
+        {isLoggedIn ? (
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => router.push('/edit-profil')}
+          >
+            <Text style={styles.editBtnText}>Modifier le profil</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <Text style={styles.editBtnText}>Se connecter</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Premium */}
@@ -72,28 +104,19 @@ export default function Profil() {
         ))}
       </View>
 
-      <TouchableOpacity
-        style={styles.logoutBtn}
-        onPress={() =>
-          Alert.alert(
-            'Se déconnecter ?',
-            'Vous devrez vous reconnecter pour accéder à votre compte.',
-            [
-              { text: 'Annuler', style: 'cancel' },
-              {
-                text: 'Se déconnecter',
-                style: 'destructive',
-                onPress: () => {
-                  // À brancher Supabase : supabase.auth.signOut()
-                  router.replace('/(auth)/login');
-                },
-              },
-            ]
-          )
-        }
-      >
-        <Text style={styles.logoutText}>Se déconnecter</Text>
-      </TouchableOpacity>
+      {/* Déconnexion — visible seulement si connecté */}
+      {isLoggedIn ? (
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Se déconnecter</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={() => router.push('/(auth)/login')}
+        >
+          <Text style={styles.loginText}>Se connecter / Créer un compte</Text>
+        </TouchableOpacity>
+      )}
 
     </ScrollView>
   );
@@ -164,4 +187,5 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
   logoutText: { fontSize: 15, color: colors.error },
+  loginText: { fontSize: 15, color: colors.gold },
 });

@@ -14,6 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { colors, spacing, radius, layout } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -23,6 +24,8 @@ const GOOGLE_CLIENT_ID_ANDROID = 'VOTRE_ANDROID_CLIENT_ID.apps.googleusercontent
 const GOOGLE_CLIENT_ID_WEB = 'VOTRE_WEB_CLIENT_ID.apps.googleusercontent.com';
 
 export default function Login() {
+  const { login, loginSocial } = useAuth();
+
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,8 +41,9 @@ export default function Login() {
     try {
       const result = await promptAsync();
       if (result?.type === 'success') {
-        // result.authentication.accessToken → à envoyer à ton backend Supabase
-        // Pour l'instant : navigation directe
+        // Plus tard : récupérer le profil via result.authentication.accessToken
+        // Pour l'instant : on crée un user minimal
+        await loginSocial({ email: '', prenom: '', nom: '' });
         router.replace('/(tabs)');
       }
     } catch (e) {
@@ -56,7 +60,11 @@ export default function Login() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      // credential.identityToken → à envoyer à ton backend Supabase
+      await loginSocial({
+        email: credential.email || '',
+        prenom: credential.fullName?.givenName || '',
+        nom: credential.fullName?.familyName || '',
+      });
       router.replace('/(tabs)');
     } catch (e) {
       if (e.code !== 'ERR_REQUEST_CANCELED') {
@@ -66,13 +74,21 @@ export default function Login() {
   };
 
   // ── Email / mot de passe ─────────────────────────────────
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !motDePasse) {
       Alert.alert('', 'Veuillez remplir tous les champs.');
       return;
     }
-    // À brancher Supabase : supabase.auth.signInWithPassword({ email, password })
-    router.replace('/(tabs)');
+    setLoading(true);
+    try {
+      // À remplacer plus tard par : supabase.auth.signInWithPassword({ email, password })
+      await login(email, motDePasse);
+      router.replace('/(tabs)');
+    } catch (e) {
+      Alert.alert('Erreur', 'Connexion impossible. Vérifiez vos identifiants.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -152,8 +168,14 @@ export default function Login() {
           <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.loginBtnText}>Se connecter</Text>
+        <TouchableOpacity
+          style={[styles.loginBtn, loading && { opacity: 0.6 }]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.loginBtnText}>
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.divider}>
