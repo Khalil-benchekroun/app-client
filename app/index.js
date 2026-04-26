@@ -1,12 +1,24 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { useAuth } from '../context/AuthContext';
+import { colors } from '../constants/theme';
 
-export default function Page() {
+export default function Index() {
+  const { loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading) {
+      // Toujours aller vers les tabs —
+      // le mode invité est autorisé, le profil gère l'affichage
+      router.replace('/(tabs)');
+    }
+  }, [loading]);
+
+  // Écran de chargement pendant la lecture AsyncStorage
   return (
     <View style={styles.container}>
-      <View style={styles.main}>
-        <Text style={styles.title}>Hello World</Text>
-        <Text style={styles.subtitle}>This is the first page of your app.</Text>
-      </View>
+      <ActivityIndicator size="small" color={colors.gold} />
     </View>
   );
 }
@@ -14,21 +26,8 @@ export default function Page() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    padding: 24,
-  },
-  main: {
-    flex: 1,
-    justifyContent: "center",
-    maxWidth: 960,
-    marginHorizontal: "auto",
-  },
-  title: {
-    fontSize: 64,
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 36,
-    color: "#38434D",
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
