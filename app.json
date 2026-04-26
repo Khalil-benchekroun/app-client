@@ -39,7 +39,8 @@
           "isAndroidBackgroundLocationEnabled": false
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

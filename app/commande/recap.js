@@ -1,66 +1,78 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
-
-const CODES_PROMO_VALIDES = {
-  'LIVRR10': { remise: 10, type: 'pourcent', label: '−10%' },
-  'BIENVENUE': { remise: 5, type: 'fixe', label: '−5,00 €' },
-  'VIP2026': { remise: 15, type: 'pourcent', label: '−15%' },
-};
 
 const produitsPanier = [
   { id: '1', nom: 'Robe en soie', taille: 'M', couleur: 'Noir', prix: 245, quantite: 1 },
   { id: '2', nom: 'Foulard en soie', taille: 'Unique', couleur: 'Or', prix: 95, quantite: 2 },
 ];
 
+// 'livraison' | 'click_collect'
+const MODES_EXPEDITION = [
+  { id: 'livraison', label: 'Livraison à domicile', icon: '◎' },
+  { id: 'click_collect', label: 'Click & Collect', icon: '◈' },
+];
+
 const modesLivraison = [
-  { id: '1', label: 'Express < 1h', description: 'Livraison en moins d\'une heure', prix: 9.90, disponible: true },
-  { id: '2', label: 'Aujourd\'hui J0', description: 'Livraison dans la journée', prix: 6.90, disponible: true },
-  { id: '3', label: 'Programmée', description: 'Choisissez votre créneau', prix: 4.90, disponible: true },
+  { id: '1', label: 'Express < 1h', description: "Livraison en moins d'une heure", prix: 9.90 },
+  { id: '2', label: "Aujourd'hui J0", description: 'Livraison dans la journée', prix: 6.90 },
+  { id: '3', label: 'Programmée', description: 'Choisissez votre créneau', prix: 4.90 },
 ];
 
 const creneaux = [
-  { id: '1', jour: 'Aujourd\'hui', heure: '18h00 – 20h00' },
+  { id: '1', jour: "Aujourd'hui", heure: '18h00 – 20h00' },
   { id: '2', jour: 'Demain', heure: '10h00 – 12h00' },
   { id: '3', jour: 'Demain', heure: '14h00 – 16h00' },
   { id: '4', jour: 'Demain', heure: '18h00 – 20h00' },
   { id: '5', jour: 'Après-demain', heure: '10h00 – 12h00' },
 ];
 
+// Boutiques disponibles pour le retrait
+const BOUTIQUES_RETRAIT = [
+  {
+    id: '1',
+    nom: 'Boutique Parisienne',
+    adresse: '12 Rue du Faubourg Saint-Honoré, 75008 Paris',
+    horaires: 'Lun–Sam 10h00 – 19h30',
+    distance: '800m',
+    creneauxRetrait: [
+      { id: 'r1', label: "Aujourd'hui dès 16h00" },
+      { id: 'r2', label: 'Demain dès 10h00' },
+      { id: 'r3', label: 'Demain dès 14h00' },
+    ],
+  },
+  {
+    id: '2',
+    nom: 'Maison Dorée',
+    adresse: '28 Avenue Montaigne, 75008 Paris',
+    horaires: 'Lun–Sam 10h00 – 20h00',
+    distance: '1,2 km',
+    creneauxRetrait: [
+      { id: 'r4', label: 'Demain dès 10h00' },
+      { id: 'r5', label: 'Demain dès 15h00' },
+    ],
+  },
+];
+
 export default function Recap() {
+  const [modeExpedition, setModeExpedition] = useState('livraison'); // 'livraison' | 'click_collect'
   const [modeLivraison, setModeLivraison] = useState('1');
   const [creneauSelectionne, setCreneauSelectionne] = useState(null);
-  const [codePromo, setCodePromo] = useState('');
-  const [promoAppliquee, setPromoAppliquee] = useState(null);
-  const [promoErreur, setPromoErreur] = useState(false);
+  const [boutiqueRetrait, setBoutiqueRetrait] = useState(null);
+  const [creneauRetrait, setCreneauRetrait] = useState(null);
 
-  const appliquerCode = () => {
-    const code = codePromo.trim().toUpperCase();
-    if (CODES_PROMO_VALIDES[code]) {
-      setPromoAppliquee({ ...CODES_PROMO_VALIDES[code], code });
-      setPromoErreur(false);
-    } else {
-      setPromoErreur(true);
-      setPromoAppliquee(null);
-    }
-  };
-
-  const supprimerPromo = () => {
-    setPromoAppliquee(null);
-    setCodePromo('');
-    setPromoErreur(false);
-  };
-
+  const isClickCollect = modeExpedition === 'click_collect';
   const modeSelectionne = modesLivraison.find(m => m.id === modeLivraison);
   const sousTotal = produitsPanier.reduce((acc, p) => acc + p.prix * p.quantite, 0);
-  const fraisLivraison = modeSelectionne?.prix || 9.90;
-  const remise = promoAppliquee
-    ? promoAppliquee.type === 'pourcent'
-      ? sousTotal * promoAppliquee.remise / 100
-      : promoAppliquee.remise
-    : 0;
-  const total = sousTotal + fraisLivraison - remise;
+  const fraisLivraison = isClickCollect ? 0 : (modeSelectionne?.prix || 9.90);
+  const total = sousTotal + fraisLivraison;
+
+  const peutPayer = () => {
+    if (isClickCollect) return boutiqueRetrait !== null && creneauRetrait !== null;
+    if (modeLivraison === '3') return creneauSelectionne !== null;
+    return true;
+  };
 
   return (
     <View style={styles.container}>
@@ -101,102 +113,170 @@ export default function Recap() {
           ))}
         </View>
 
-        {/* Adresse */}
+        {/* Mode d'expédition : livraison ou click & collect */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Adresse de livraison</Text>
-          <TouchableOpacity style={styles.adresseCard} onPress={() => router.push('/adresse')}>
-            <View style={styles.adresseInfo}>
-              <Text style={styles.adresseNom}>Domicile</Text>
-              <Text style={styles.adresseText}>12 Rue du Faubourg Saint-Honoré, 75008 Paris</Text>
-            </View>
-            <Text style={styles.adresseEdit}>Modifier</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Mode de livraison */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mode de livraison</Text>
-          {modesLivraison.map((mode) => (
-            <TouchableOpacity
-              key={mode.id}
-              style={[styles.livraisonCard, modeLivraison === mode.id && styles.livraisonSelected]}
-              onPress={() => {
-                setModeLivraison(mode.id);
-                if (mode.id !== '3') setCreneauSelectionne(null);
-              }}
-            >
-              <View style={styles.livraisonLeft}>
-                <View style={[styles.livraisonDot, modeLivraison === mode.id && styles.livraisonDotSelected]} />
-                <View>
-                  <Text style={[styles.livraisonLabel, modeLivraison === mode.id && styles.livraisonLabelSelected]}>
-                    {mode.label}
-                  </Text>
-                  <Text style={styles.livraisonDescription}>{mode.description}</Text>
-                </View>
-              </View>
-              <Text style={[styles.livraisonPrix, modeLivraison === mode.id && styles.livraisonPrixSelected]}>
-                {mode.prix.toFixed(2).replace('.', ',')} €
-              </Text>
-            </TouchableOpacity>
-          ))}
-
-          {/* Créneaux programmés */}
-          {modeLivraison === '3' && (
-            <View style={styles.creneauxSection}>
-              <Text style={styles.creneauxTitle}>Choisissez un créneau</Text>
-              {creneaux.map((creneau) => (
-                <TouchableOpacity
-                  key={creneau.id}
-                  style={[styles.creneauCard, creneauSelectionne === creneau.id && styles.creneauCardSelected]}
-                  onPress={() => setCreneauSelectionne(creneau.id)}
-                >
-                  <View style={[styles.creneauDot, creneauSelectionne === creneau.id && styles.creneauDotSelected]} />
-                  <View>
-                    <Text style={styles.creneauJour}>{creneau.jour}</Text>
-                    <Text style={styles.creneauHeure}>{creneau.heure}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Code promo */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Code promotionnel</Text>
-          {promoAppliquee ? (
-            <View style={styles.promoAppliquee}>
-              <View style={styles.promoAppliqueeLeft}>
-                <Text style={styles.promoAppliqueeCode}>{promoAppliquee.code}</Text>
-                <Text style={styles.promoAppliqueeLabel}>{promoAppliquee.label} appliqué</Text>
-              </View>
-              <TouchableOpacity onPress={supprimerPromo} style={styles.promoSupprBtn}>
-                <Text style={styles.promoSupprBtnText}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.promoRow}>
-              <TextInput
-                style={[styles.promoInput, promoErreur && styles.promoInputErreur]}
-                placeholder="Entrer un code promo"
-                placeholderTextColor={colors.textMuted}
-                value={codePromo}
-                onChangeText={(t) => { setCodePromo(t); setPromoErreur(false); }}
-                autoCapitalize="characters"
-              />
+          <Text style={styles.sectionTitle}>Mode de récupération</Text>
+          <View style={styles.expeditionRow}>
+            {MODES_EXPEDITION.map(mode => (
               <TouchableOpacity
-                style={[styles.promoBtn, !codePromo.trim() && styles.promoBtnDisabled]}
-                onPress={appliquerCode}
-                disabled={!codePromo.trim()}
+                key={mode.id}
+                style={[
+                  styles.expeditionCard,
+                  modeExpedition === mode.id && styles.expeditionCardSelected,
+                ]}
+                onPress={() => {
+                  setModeExpedition(mode.id);
+                  setBoutiqueRetrait(null);
+                  setCreneauRetrait(null);
+                }}
               >
-                <Text style={styles.promoBtnText}>Appliquer</Text>
+                <Text style={[
+                  styles.expeditionIcon,
+                  modeExpedition === mode.id && styles.expeditionIconSelected,
+                ]}>
+                  {mode.icon}
+                </Text>
+                <Text style={[
+                  styles.expeditionLabel,
+                  modeExpedition === mode.id && styles.expeditionLabelSelected,
+                ]}>
+                  {mode.label}
+                </Text>
+                {mode.id === 'click_collect' && (
+                  <View style={styles.gratuitBadge}>
+                    <Text style={styles.gratuitBadgeText}>Gratuit</Text>
+                  </View>
+                )}
               </TouchableOpacity>
-            </View>
-          )}
-          {promoErreur && (
-            <Text style={styles.promoErreur}>Code invalide ou expiré</Text>
-          )}
+            ))}
+          </View>
         </View>
+
+        {/* Adresse — uniquement si livraison */}
+        {!isClickCollect && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Adresse de livraison</Text>
+            <TouchableOpacity style={styles.adresseCard} onPress={() => router.push('/adresse')}>
+              <View style={styles.adresseInfo}>
+                <Text style={styles.adresseNom}>Domicile</Text>
+                <Text style={styles.adresseText}>12 Rue du Faubourg Saint-Honoré, 75008 Paris</Text>
+              </View>
+              <Text style={styles.adresseEdit}>Modifier</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Mode de livraison — uniquement si livraison */}
+        {!isClickCollect && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mode de livraison</Text>
+            {modesLivraison.map((mode) => (
+              <TouchableOpacity
+                key={mode.id}
+                style={[styles.livraisonCard, modeLivraison === mode.id && styles.livraisonSelected]}
+                onPress={() => {
+                  setModeLivraison(mode.id);
+                  if (mode.id !== '3') setCreneauSelectionne(null);
+                }}
+              >
+                <View style={styles.livraisonLeft}>
+                  <View style={[styles.livraisonDot, modeLivraison === mode.id && styles.livraisonDotSelected]} />
+                  <View>
+                    <Text style={[styles.livraisonLabel, modeLivraison === mode.id && styles.livraisonLabelSelected]}>
+                      {mode.label}
+                    </Text>
+                    <Text style={styles.livraisonDescription}>{mode.description}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.livraisonPrix, modeLivraison === mode.id && styles.livraisonPrixSelected]}>
+                  {mode.prix.toFixed(2).replace('.', ',')} €
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {modeLivraison === '3' && (
+              <View style={styles.creneauxSection}>
+                <Text style={styles.creneauxTitle}>Choisissez un créneau</Text>
+                {creneaux.map((creneau) => (
+                  <TouchableOpacity
+                    key={creneau.id}
+                    style={[styles.creneauCard, creneauSelectionne === creneau.id && styles.creneauCardSelected]}
+                    onPress={() => setCreneauSelectionne(creneau.id)}
+                  >
+                    <View style={[styles.creneauDot, creneauSelectionne === creneau.id && styles.creneauDotSelected]} />
+                    <View>
+                      <Text style={styles.creneauJour}>{creneau.jour}</Text>
+                      <Text style={styles.creneauHeure}>{creneau.heure}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Click & Collect — choix boutique + créneau */}
+        {isClickCollect && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Choisir une boutique</Text>
+
+            {BOUTIQUES_RETRAIT.map(b => (
+              <TouchableOpacity
+                key={b.id}
+                style={[
+                  styles.boutiqueRetraitCard,
+                  boutiqueRetrait === b.id && styles.boutiqueRetraitSelected,
+                ]}
+                onPress={() => {
+                  setBoutiqueRetrait(b.id);
+                  setCreneauRetrait(null);
+                }}
+              >
+                <View style={styles.boutiqueRetraitTop}>
+                  <View style={[styles.livraisonDot, boutiqueRetrait === b.id && styles.livraisonDotSelected]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[
+                      styles.boutiqueRetraitNom,
+                      boutiqueRetrait === b.id && { color: colors.textPrimary },
+                    ]}>
+                      {b.nom}
+                    </Text>
+                    <Text style={styles.boutiqueRetraitAdresse}>{b.adresse}</Text>
+                    <View style={styles.boutiqueRetraitMeta}>
+                      <Text style={styles.boutiqueRetraitMetaText}>◎ {b.distance}</Text>
+                      <Text style={styles.boutiqueRetraitMetaText}>· {b.horaires}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Créneaux de retrait pour cette boutique */}
+                {boutiqueRetrait === b.id && (
+                  <View style={styles.creneauxRetraitSection}>
+                    <Text style={styles.creneauxTitle}>Créneau de retrait</Text>
+                    {b.creneauxRetrait.map(cr => (
+                      <TouchableOpacity
+                        key={cr.id}
+                        style={[styles.creneauCard, creneauRetrait === cr.id && styles.creneauCardSelected]}
+                        onPress={() => setCreneauRetrait(cr.id)}
+                      >
+                        <View style={[styles.creneauDot, creneauRetrait === cr.id && styles.creneauDotSelected]} />
+                        <Text style={styles.creneauJour}>{cr.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {/* Info Click & Collect */}
+            <View style={styles.clickCollectInfo}>
+              <Text style={styles.clickCollectInfoIcon}>◎</Text>
+              <Text style={styles.clickCollectInfoText}>
+                Votre commande sera prête en boutique dans les 2 heures suivant la validation.
+                Retrait gratuit, sans frais de livraison.
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Résumé prix */}
         <View style={styles.section}>
@@ -205,15 +285,13 @@ export default function Recap() {
             <Text style={styles.prixValue}>{sousTotal.toFixed(2).replace('.', ',')} €</Text>
           </View>
           <View style={styles.prixRow}>
-            <Text style={styles.prixLabel}>Livraison {modeSelectionne?.label}</Text>
-            <Text style={styles.prixValue}>{fraisLivraison.toFixed(2).replace('.', ',')} €</Text>
+            <Text style={styles.prixLabel}>
+              {isClickCollect ? 'Retrait en boutique' : `Livraison ${modeSelectionne?.label}`}
+            </Text>
+            <Text style={[styles.prixValue, isClickCollect && { color: colors.success }]}>
+              {isClickCollect ? 'Gratuit' : `${fraisLivraison.toFixed(2).replace('.', ',')} €`}
+            </Text>
           </View>
-          {promoAppliquee && (
-            <View style={styles.prixRow}>
-              <Text style={[styles.prixLabel, { color: colors.success }]}>Code {promoAppliquee.code}</Text>
-              <Text style={[styles.prixValue, { color: colors.success }]}>−{remise.toFixed(2).replace('.', ',')} €</Text>
-            </View>
-          )}
           <View style={[styles.prixRow, styles.prixTotal]}>
             <Text style={styles.prixTotalLabel}>Total</Text>
             <Text style={styles.prixTotalValue}>{total.toFixed(2).replace('.', ',')} €</Text>
@@ -225,16 +303,12 @@ export default function Recap() {
       {/* Bouton paiement */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[
-            styles.payBtn,
-            modeLivraison === '3' && !creneauSelectionne && styles.payBtnDisabled
-          ]}
-          onPress={() => {
-            if (modeLivraison === '3' && !creneauSelectionne) return;
-            router.push('/commande/paiement');
-          }}
+          style={[styles.payBtn, !peutPayer() && styles.payBtnDisabled]}
+          onPress={() => { if (peutPayer()) router.push('/commande/paiement'); }}
         >
-          <Text style={styles.payBtnText}>Procéder au paiement</Text>
+          <Text style={styles.payBtnText}>
+            {isClickCollect ? 'Confirmer le retrait' : 'Procéder au paiement'}
+          </Text>
           <Text style={styles.payBtnPrice}>{total.toFixed(2).replace('.', ',')} €</Text>
         </TouchableOpacity>
       </View>
@@ -541,38 +615,120 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: colors.textLight,
   },
-  promoRow: {
-    flexDirection: 'row', gap: spacing.sm,
+
+  // Mode d'expédition toggle
+  expeditionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
-  promoInput: {
-    flex: 1, height: 48,
+  expeditionCard: {
+    flex: 1,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 0.5,
+    borderColor: colors.border,
     backgroundColor: colors.backgroundSoft,
-    borderRadius: radius.md, borderWidth: 0.5, borderColor: colors.border,
-    paddingHorizontal: spacing.lg,
-    fontSize: 15, color: colors.textPrimary,
-    letterSpacing: 1,
+    alignItems: 'center',
+    gap: spacing.xs,
   },
-  promoInputErreur: { borderColor: colors.error },
-  promoBtn: {
-    height: 48, paddingHorizontal: spacing.lg,
-    backgroundColor: colors.backgroundDark,
-    borderRadius: radius.md, alignItems: 'center', justifyContent: 'center',
+  expeditionCardSelected: {
+    borderColor: colors.gold,
+    backgroundColor: colors.background,
   },
-  promoBtnDisabled: { opacity: 0.4 },
-  promoBtnText: { fontSize: 14, color: colors.gold, letterSpacing: 0.5 },
-  promoAppliquee: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    padding: spacing.lg, backgroundColor: '#E8F5E9',
-    borderRadius: radius.md, borderWidth: 0.5, borderColor: colors.success,
+  expeditionIcon: {
+    fontSize: 20,
+    color: colors.textMuted,
   },
-  promoAppliqueeLeft: { flex: 1 },
-  promoAppliqueeCode: { fontSize: 14, fontWeight: '400', color: colors.success, letterSpacing: 1, marginBottom: 2 },
-  promoAppliqueeLabel: { fontSize: 12, color: colors.success, opacity: 0.8 },
-  promoSupprBtn: {
-    width: 32, height: 32, borderRadius: radius.full,
-    backgroundColor: 'rgba(0,0,0,0.08)',
-    alignItems: 'center', justifyContent: 'center',
+  expeditionIconSelected: {
+    color: colors.gold,
   },
-  promoSupprBtnText: { fontSize: 18, color: colors.success, lineHeight: 20 },
-  promoErreur: { fontSize: 12, color: colors.error, marginTop: spacing.sm },
+  expeditionLabel: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  expeditionLabelSelected: {
+    color: colors.textPrimary,
+  },
+  gratuitBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    backgroundColor: '#E8F5EE',
+    borderRadius: radius.sm,
+  },
+  gratuitBadgeText: {
+    fontSize: 10,
+    color: colors.success,
+    fontWeight: '400',
+  },
+
+  // Boutique retrait
+  boutiqueRetraitCard: {
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundSoft,
+    marginBottom: spacing.sm,
+  },
+  boutiqueRetraitSelected: {
+    borderColor: colors.gold,
+    backgroundColor: colors.background,
+  },
+  boutiqueRetraitTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  boutiqueRetraitNom: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  boutiqueRetraitAdresse: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 18,
+    marginBottom: spacing.xs,
+  },
+  boutiqueRetraitMeta: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  boutiqueRetraitMetaText: {
+    fontSize: 11,
+    color: colors.textMuted,
+  },
+  creneauxRetraitSection: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.borderLight,
+  },
+
+  // Info click & collect
+  clickCollectInfo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: '#E8F5EE',
+    borderRadius: radius.md,
+    borderWidth: 0.5,
+    borderColor: '#BBF7D0',
+  },
+  clickCollectInfoIcon: {
+    fontSize: 13,
+    color: colors.success,
+    marginTop: 1,
+  },
+  clickCollectInfoText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.success,
+    lineHeight: 18,
+  },
 });

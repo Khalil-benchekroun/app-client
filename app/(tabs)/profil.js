@@ -4,11 +4,9 @@ import { colors, spacing, radius, layout, shadows } from '../../constants/theme'
 
 const menuItems = [
   { icon: '◎', label: 'Mes adresses', route: '/adresse' },
-  { icon: '◈', label: 'Fidélité & points', route: '/fidelite' },
-  { icon: '✦', label: 'Jeux & concours', route: '/jeux' },
-  { icon: '§', label: 'Messages', route: '/messages' },
   { icon: '◈', label: 'Moyens de paiement', route: '/paiements' },
   { icon: '✦', label: 'Mes favoris', route: '/favoris' },
+  { icon: '◈', label: 'Parrainage', route: '/parrainage' },
   { icon: '◉', label: 'Notifications', route: '/notifications' },
   { icon: '?', label: 'Aide & FAQ', route: '/faq' },
   { icon: '§', label: 'CGU / CGV', route: '/cgu' },
@@ -37,7 +35,7 @@ export default function Profil() {
           <Text style={styles.abonnementTitle}>LIVRR Free</Text>
           <Text style={styles.abonnementSub}>Passez à Premium pour des avantages exclusifs</Text>
         </View>
-        <TouchableOpacity style={styles.upgradeBtn} onPress={() => router.push('/premium')}>
+        <TouchableOpacity style={styles.upgradeBtn}>
           <Text style={styles.upgradeBtnText}>Premium</Text>
         </TouchableOpacity>
       </View>
