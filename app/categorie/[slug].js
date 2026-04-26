@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState } from 'react';
-import { colors, spacing, radius, layout, shadows } from '../constants/theme';
+import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
 // ── Données mock par catégorie ────────────────────────────────────────────────
 const PRODUITS_PAR_CATEGORIE = {
