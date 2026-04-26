@@ -9,7 +9,7 @@ import {
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { colors, spacing, radius } from '../constants/theme';
+import { colors, spacing, radius } from '../../constants/theme';
 
 const CLE_STORAGE = 'livrr_popup_vu';
 
