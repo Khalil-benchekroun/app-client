@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { colors, spacing, radius, shadows, layout } from '../../constants/theme';
-import PopupOffre from '../../components/PopupOffre';
+import PopupOffre from '../../components/common/PopupOffre';
 
 const boutiques = [
   { id: '1', nom: 'Boutique Parisienne', categorie: 'Mode', distance: '800m', delai: '45 min' },
