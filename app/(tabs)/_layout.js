@@ -257,21 +257,16 @@ function TabIconAnimated({ focused, icon, label, nbArticles }) {
         )}
       </Animated.View>
 
-      {/* Label qui apparaît seulement quand actif */}
+      {/* Label — toujours présent, opacity animée pour transition douce */}
       <Animated.Text
         style={[
           styles.label,
-          { color, opacity: opacityLabelAnim },
+          { color, opacity: focused ? opacityLabelAnim : 0.55 },
         ]}
         numberOfLines={1}
       >
         {label}
       </Animated.Text>
-
-      {/* Point doré sous l'icône inactive */}
-      {!focused && (
-        <View style={styles.dotInactive} />
-      )}
     </View>
   );
 }
@@ -288,10 +283,10 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.navBackground,
           borderTopWidth: 0,
-          height: 64 + insets.bottom,
-          paddingBottom: insets.bottom,
-          paddingTop: 6,
-          // Ombre subtile vers le haut
+          // Math.max : plancher à 20px pour Android navigation gesture (insets.bottom = 0)
+          height: 76 + Math.max(insets.bottom, 20),
+          paddingBottom: Math.max(insets.bottom, 20),
+          paddingTop: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.15,
@@ -350,9 +345,10 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 60,
-    height: 52,
-    gap: 3,
+    width: 64,
+    height: 56,
+    gap: 4,
+    paddingTop: 2,
   },
   iconWrap: {
     alignItems: 'center',

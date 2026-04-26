@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 import { useCart } from '../../context/CartContext';
 
@@ -146,7 +146,10 @@ export default function FicheProduit() {
     couleursDisponibles ? couleursDisponibles[0] : null
   );
   const [favori, setFavori] = useState(false);
-  const [ajoute, setAjoute] = useState(false);
+  // 'idle' | 'added'
+  const [etatPanier, setEtatPanier] = useState('idle');
+  const scaleBtn = useRef(new Animated.Value(1)).current;
+  const opacityBtn = useRef(new Animated.Value(1)).current;
 
   if (!produit) {
     return (
@@ -168,7 +171,12 @@ export default function FicheProduit() {
 
   // ── Ajouter au panier ────────────────────────────────────
   const handleAjouterAuPanier = () => {
-    // Validation : variante requise si disponible
+    if (etatPanier === 'added') {
+      // Déjà ajouté → aller directement au panier
+      router.push('/(tabs)/panier');
+      return;
+    }
+
     if (variantesConfig.options.length > 0 && !varianteSelectionnee) {
       Alert.alert('', `Veuillez choisir ${variantesConfig.label.toLowerCase()}.`);
       return;
@@ -186,9 +194,13 @@ export default function FicheProduit() {
       image: null,
     });
 
-    // Feedback visuel
-    setAjoute(true);
-    setTimeout(() => setAjoute(false), 2000);
+    // Animation : scale down → up + transition vers état "added"
+    Animated.sequence([
+      Animated.timing(scaleBtn, { toValue: 0.93, duration: 80, useNativeDriver: true }),
+      Animated.spring(scaleBtn, { toValue: 1, useNativeDriver: true, tension: 300, friction: 10 }),
+    ]).start();
+
+    setEtatPanier('added');
   };
 
   return (
@@ -399,18 +411,47 @@ export default function FicheProduit() {
 
       {/* Bouton panier fixe */}
       <View style={styles.footer}>
-        <View style={styles.footerPrice}>
-          <Text style={styles.footerPriceLabel}>Prix</Text>
-          <Text style={styles.footerPriceValue}>{prixFormate}</Text>
-        </View>
-        <TouchableOpacity
-          style={[styles.addToCartBtn, ajoute && styles.addToCartBtnSuccess]}
-          onPress={handleAjouterAuPanier}
-        >
-          <Text style={styles.addToCartText}>
-            {ajoute ? '✓ Ajouté' : 'Ajouter au panier'}
-          </Text>
-        </TouchableOpacity>
+        {etatPanier === 'idle' ? (
+          // ── État initial : prix + bouton ajouter ──
+          <>
+            <View style={styles.footerPrice}>
+              <Text style={styles.footerPriceLabel}>Prix</Text>
+              <Text style={styles.footerPriceValue}>{prixFormate}</Text>
+            </View>
+            <Animated.View style={{ transform: [{ scale: scaleBtn }] }}>
+              <TouchableOpacity
+                style={styles.addToCartBtn}
+                onPress={handleAjouterAuPanier}
+              >
+                <Text style={styles.addToCartText}>Ajouter au panier</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </>
+        ) : (
+          // ── État ajouté : bouton plein largeur "Voir mon panier" ──
+          <Animated.View style={[styles.voirPanierWrap, { transform: [{ scale: scaleBtn }] }]}>
+            <TouchableOpacity
+              style={styles.voirPanierBtn}
+              onPress={() => router.push('/(tabs)/panier')}
+            >
+              <Text style={styles.voirPanierCheck}>✓</Text>
+              <View style={styles.voirPanierCenter}>
+                <Text style={styles.voirPanierText}>Voir mon panier</Text>
+                <Text style={styles.voirPanierSub}>{produit.nom} ajouté</Text>
+              </View>
+              <Text style={styles.voirPanierArrow}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.continuerBtn}
+              onPress={() => {
+                setEtatPanier('idle');
+                router.back();
+              }}
+            >
+              <Text style={styles.continuerBtnText}>Continuer mes achats</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </View>
     </View>
   );
@@ -607,6 +648,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl, paddingVertical: spacing.lg,
     borderRadius: radius.md,
   },
-  addToCartBtnSuccess: { backgroundColor: colors.success },
   addToCartText: { fontSize: 14, fontWeight: '400', color: colors.gold, letterSpacing: 1 },
+
+  // État "ajouté"
+  voirPanierWrap: { flex: 1 },
+  voirPanierBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: colors.success,
+    padding: spacing.lg, borderRadius: radius.md,
+    marginBottom: spacing.sm,
+  },
+  voirPanierCheck: { fontSize: 18, color: '#fff', marginRight: spacing.md },
+  voirPanierCenter: { flex: 1 },
+  voirPanierText: { fontSize: 15, fontWeight: '400', color: '#fff', letterSpacing: 0.3 },
+  voirPanierSub: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 1 },
+  voirPanierArrow: { fontSize: 22, color: '#fff', opacity: 0.8 },
+  continuerBtn: { alignItems: 'center', paddingVertical: spacing.xs },
+  continuerBtnText: { fontSize: 12, color: colors.textMuted },
 });
