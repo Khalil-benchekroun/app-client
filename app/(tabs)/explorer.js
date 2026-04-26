@@ -7,6 +7,7 @@ import {
   TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useHeaderHeight } from '../../hooks/useHeaderHeight';
 import { useState, useMemo } from 'react';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 
@@ -38,6 +39,7 @@ const TRIS = ['Distance', 'Popularité', 'Nouveautés'];
 const RECHERCHES_RECENTES = ['Robe en soie', 'Sac cuir', 'Beauté Dorée'];
 
 export default function Explorer() {
+  const { headerPadding } = useHeaderHeight();
   const [search, setSearch] = useState('');
   const [searchActif, setSearchActif] = useState(false);
   const [categorieActive, setCategorieActive] = useState('Toutes');
@@ -86,7 +88,7 @@ export default function Explorer() {
     <View style={styles.container}>
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerPadding }]}>
         {!searchActif && (
           <>
             <Text style={styles.title}>Explorer</Text>
@@ -360,7 +362,7 @@ const styles = StyleSheet.create({
 
   header: {
     paddingHorizontal: layout.screenPadding,
-    paddingTop: 60,
+    paddingTop: layout.headerSpacing,
     paddingBottom: spacing.md,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.border,
@@ -428,7 +430,7 @@ const styles = StyleSheet.create({
   produitPrix: { fontSize: 13, color: colors.textSecondary },
 
   // Empty state
-  emptyState: { alignItems: 'center', paddingTop: 60, gap: spacing.sm },
+  emptyState: { alignItems: 'center', paddingTop: layout.headerSpacing, gap: spacing.sm },
   emptyIcon: { fontSize: 32, color: colors.gold, opacity: 0.3, marginBottom: spacing.md },
   emptyTitle: { fontSize: 16, fontWeight: '400', color: colors.textPrimary },
   emptySub: { fontSize: 13, color: colors.textSecondary },

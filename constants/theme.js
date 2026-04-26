@@ -34,7 +34,6 @@ export const colors = {
 };
 
 export const typography = {
-  // Display — Cormorant Garamond
   display: {
     fontFamily: 'CormorantGaramond-Regular',
     fontSize: 32,
@@ -53,8 +52,6 @@ export const typography = {
     lineHeight: 30,
     color: colors.textPrimary,
   },
-
-  // Corps — DM Sans
   h1: {
     fontFamily: 'DMSans-Medium',
     fontSize: 20,
@@ -151,4 +148,9 @@ export const layout = {
   cardPadding: 16,
   navHeight: 80,
   headerHeight: 56,
+
+  // Valeur statique de fallback pour les écrans qui n'utilisent pas encore
+  // le hook useHeaderHeight. Equivalent de l'ancien paddingTop: 60.
+  // À terme tous les écrans doivent utiliser useHeaderHeight() à la place.
+  headerSpacing: 60,
 };

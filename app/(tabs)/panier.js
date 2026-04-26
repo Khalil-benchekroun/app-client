@@ -1,26 +1,37 @@
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
+  View, Text, StyleSheet, ScrollView,
+  TouchableOpacity, Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
 import { useCart } from '../../context/CartContext';
+import { useHeaderHeight } from '../../hooks/useHeaderHeight';
+import { useAuth } from '../../context/AuthContext';
 
-const FRAIS_LIVRAISON = 9.90;
+// Constante centralisée — importée aussi par recap.js pour cohérence
+export const FRAIS_LIVRAISON_EXPRESS = 9.90;
 
 export default function Panier() {
-  const { items, nbArticles, sousTotal, modifierQuantite, supprimerDuPanier, viderPanier, parBoutique } = useCart();
+  const { headerPadding, bottomPadding } = useHeaderHeight();
+  const { isLoggedIn } = useAuth();
+  const {
+    items, nbArticles, sousTotal,
+    modifierQuantite, supprimerDuPanier, viderPanier, parBoutique,
+  } = useCart();
 
-  const total = sousTotal + FRAIS_LIVRAISON;
+  const total = sousTotal + FRAIS_LIVRAISON_EXPRESS;
+
+  const afficherVariante = (item) => {
+    const parts = [];
+    if (item.variante) parts.push(`${item.varianteType || 'Taille'} ${item.variante}`);
+    if (item.couleur) parts.push(item.couleur);
+    return parts.join(' · ') || 'Taille unique';
+  };
 
   const confirmerSuppression = (item) => {
     Alert.alert(
       'Retirer cet article ?',
-      `${item.nom}${item.variante ? ` · ${item.variante}` : ''}${item.couleur ? ` · ${item.couleur}` : ''}`,
+      `${item.nom}${item.variante ? ` · ${item.variante}` : ''}`,
       [
         { text: 'Annuler', style: 'cancel' },
         { text: 'Retirer', style: 'destructive', onPress: () => supprimerDuPanier(item.cle) },
@@ -28,21 +39,26 @@ export default function Panier() {
     );
   };
 
-  // Libellé variante selon type
-  const afficherVariante = (item) => {
-    const parts = [];
-    if (item.variante) {
-      const label = item.varianteType || 'Taille';
-      parts.push(`${label} ${item.variante}`);
+  const handleCommander = () => {
+    if (!isLoggedIn) {
+      Alert.alert(
+        'Connexion requise',
+        'Connectez-vous pour finaliser votre commande.',
+        [
+          { text: 'Plus tard', style: 'cancel' },
+          { text: 'Se connecter', onPress: () => router.push('/(auth)/login') },
+        ]
+      );
+      return;
     }
-    if (item.couleur) parts.push(item.couleur);
-    return parts.join(' · ') || 'Taille unique';
+    router.push('/commande/recap');
   };
 
+  // ── Panier vide ──────────────────────────────────────────
   if (items.length === 0) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerPadding }]}>
           <Text style={styles.title}>Mon panier</Text>
           <Text style={styles.subtitle}>Vide</Text>
         </View>
@@ -58,6 +74,12 @@ export default function Panier() {
           >
             <Text style={styles.emptyBtnText}>Explorer les boutiques</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.emptyBtnSec}
+            onPress={() => router.push('/(tabs)')}
+          >
+            <Text style={styles.emptyBtnSecText}>Retour à l'accueil</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -68,7 +90,7 @@ export default function Panier() {
       <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerPadding }]}>
           <Text style={styles.title}>Mon panier</Text>
           <View style={styles.headerRight}>
             <Text style={styles.subtitle}>
@@ -93,13 +115,12 @@ export default function Panier() {
         {Object.values(parBoutique).map((groupe) => (
           <View key={groupe.boutiqueId} style={styles.groupeBoutique}>
 
-            {/* En-tête boutique si plusieurs boutiques */}
             {Object.keys(parBoutique).length > 1 && (
               <View style={styles.groupeHeader}>
                 <Text style={styles.groupeHeaderIcon}>◎</Text>
                 <Text style={styles.groupeHeaderNom}>{groupe.boutique}</Text>
                 <Text style={styles.groupeHeaderCount}>
-                  {groupe.items.reduce((s, i) => s + i.quantite, 0)} article{groupe.items.reduce((s, i) => s + i.quantite, 0) > 1 ? 's' : ''}
+                  {groupe.items.reduce((s, i) => s + i.quantite, 0)} art.
                 </Text>
               </View>
             )}
@@ -108,15 +129,11 @@ export default function Panier() {
               <View key={item.cle} style={styles.produitCard}>
                 <View style={styles.produitImage} />
                 <View style={styles.produitInfo}>
-
-                  {/* Boutique (si une seule boutique) */}
                   {Object.keys(parBoutique).length === 1 && (
                     <Text style={styles.produitBoutique}>{item.boutique}</Text>
                   )}
-
                   <Text style={styles.produitNom}>{item.nom}</Text>
                   <Text style={styles.produitVariante}>{afficherVariante(item)}</Text>
-
                   <View style={styles.produitFooter}>
                     <View style={styles.quantiteRow}>
                       <TouchableOpacity
@@ -137,7 +154,6 @@ export default function Panier() {
                       {(item.prix * item.quantite).toFixed(2).replace('.', ',')} €
                     </Text>
                   </View>
-
                 </View>
                 <TouchableOpacity
                   style={styles.deleteBtn}
@@ -150,12 +166,12 @@ export default function Panier() {
           </View>
         ))}
 
-        {/* Note livraison multi-boutiques */}
+        {/* Note multi-boutiques */}
         {Object.keys(parBoutique).length > 1 && (
           <View style={styles.multiBoutiqueNote}>
             <Text style={styles.multiBoutiqueIcon}>◎</Text>
             <Text style={styles.multiBoutiqueText}>
-              Vos articles viennent de {Object.keys(parBoutique).length} boutiques différentes.
+              Vos articles viennent de {Object.keys(parBoutique).length} boutiques.
               Chaque boutique prépare sa commande séparément.
             </Text>
           </View>
@@ -174,26 +190,31 @@ export default function Panier() {
           <View style={styles.resumeRow}>
             <Text style={styles.resumeLabel}>Livraison express</Text>
             <Text style={styles.resumeValue}>
-              {FRAIS_LIVRAISON.toFixed(2).replace('.', ',')} €
+              {FRAIS_LIVRAISON_EXPRESS.toFixed(2).replace('.', ',')} €
+            </Text>
+          </View>
+          <View style={styles.resumeRowNote}>
+            <Text style={styles.resumeNote}>
+              ◎ Gratuit en Click &amp; Collect — choisissez dans le récap
             </Text>
           </View>
           <View style={[styles.resumeRow, styles.resumeTotal]}>
-            <Text style={styles.resumeTotalLabel}>Total</Text>
+            <Text style={styles.resumeTotalLabel}>Total estimé</Text>
             <Text style={styles.resumeTotalValue}>
               {total.toFixed(2).replace('.', ',')} €
             </Text>
           </View>
         </View>
 
+        <View style={{ height: bottomPadding }} />
       </ScrollView>
 
-      {/* Footer commander */}
+      {/* Footer — bouton commander */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.commanderBtn}
-          onPress={() => router.push('/commande/recap')}
-        >
-          <Text style={styles.commanderBtnText}>Commander</Text>
+        <TouchableOpacity style={styles.commanderBtn} onPress={handleCommander}>
+          <Text style={styles.commanderBtnText}>
+            {isLoggedIn ? 'Commander' : 'Se connecter pour commander'}
+          </Text>
           <Text style={styles.commanderBtnPrice}>
             {total.toFixed(2).replace('.', ',')} €
           </Text>
@@ -205,22 +226,20 @@ export default function Panier() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+
   header: {
     paddingHorizontal: layout.screenPadding,
-    paddingTop: 60, paddingBottom: spacing.lg,
+    paddingBottom: spacing.lg,
     borderBottomWidth: 0.5, borderBottomColor: colors.border,
   },
-  title: {
-    fontSize: 28, fontWeight: '400', color: colors.textPrimary,
-    letterSpacing: 1, marginBottom: 4,
-  },
+  title: { fontSize: 28, fontWeight: '400', color: colors.textPrimary, letterSpacing: 1, marginBottom: 4 },
   headerRight: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   subtitle: { fontSize: 13, color: colors.textSecondary },
   viderText: { fontSize: 13, color: colors.error },
 
-  // Empty state
+  // Panier vide
   emptyState: {
-    flex: 1, alignItems: 'center', justifyContent: 'center',
+    flex: 1, alignItems: 'center',
     padding: layout.screenPadding, paddingTop: 80,
   },
   emptyIcon: { fontSize: 40, color: colors.gold, opacity: 0.3, marginBottom: spacing.xl },
@@ -232,14 +251,14 @@ const styles = StyleSheet.create({
   emptyBtn: {
     paddingHorizontal: spacing.xl, paddingVertical: spacing.md,
     backgroundColor: colors.backgroundDark, borderRadius: radius.md,
+    marginBottom: spacing.md,
   },
   emptyBtnText: { fontSize: 14, color: colors.gold, letterSpacing: 0.5 },
+  emptyBtnSec: { padding: spacing.md },
+  emptyBtnSecText: { fontSize: 13, color: colors.textMuted },
 
   // Groupes boutiques
-  groupeBoutique: {
-    paddingHorizontal: layout.screenPadding,
-    paddingTop: spacing.lg,
-  },
+  groupeBoutique: { paddingHorizontal: layout.screenPadding, paddingTop: spacing.lg },
   groupeHeader: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
     marginBottom: spacing.md, paddingBottom: spacing.md,
@@ -249,7 +268,7 @@ const styles = StyleSheet.create({
   groupeHeaderNom: { flex: 1, fontSize: 14, fontWeight: '400', color: colors.textPrimary },
   groupeHeaderCount: { fontSize: 12, color: colors.textMuted },
 
-  // Produit
+  // Produit card
   produitCard: {
     flexDirection: 'row', marginBottom: spacing.md,
     backgroundColor: colors.backgroundSoft, borderRadius: radius.lg,
@@ -275,7 +294,7 @@ const styles = StyleSheet.create({
   deleteBtn: { padding: spacing.sm, alignSelf: 'flex-start' },
   deleteBtnText: { fontSize: 20, color: colors.textMuted },
 
-  // Multi-boutique note
+  // Multi-boutique
   multiBoutiqueNote: {
     flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm,
     marginHorizontal: layout.screenPadding, marginTop: spacing.md,
@@ -289,11 +308,13 @@ const styles = StyleSheet.create({
   resumeSection: {
     margin: layout.screenPadding, padding: layout.cardPadding,
     backgroundColor: colors.backgroundSoft, borderRadius: radius.lg,
-    borderWidth: 0.5, borderColor: colors.border, marginBottom: 120,
+    borderWidth: 0.5, borderColor: colors.border,
   },
   resumeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
   resumeLabel: { fontSize: 14, color: colors.textSecondary },
   resumeValue: { fontSize: 14, color: colors.textPrimary },
+  resumeRowNote: { marginBottom: spacing.sm },
+  resumeNote: { fontSize: 11, color: colors.success },
   resumeTotal: {
     marginTop: spacing.sm, paddingTop: spacing.md,
     borderTopWidth: 0.5, borderTopColor: colors.border,

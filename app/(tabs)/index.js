@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { colors, spacing, radius, shadows, layout } from '../../constants/theme';
+import { useHeaderHeight } from '../../hooks/useHeaderHeight';
 import PopupOffre from '../../components/common/PopupOffre';
 
 const boutiques = [
@@ -47,6 +48,7 @@ const TAG_COLORS = {
 };
 
 export default function Accueil() {
+  const { headerPadding, bottomPadding } = useHeaderHeight();
   const [promoVisible, setPromoVisible] = useState(true);
   const [promoIndex, setPromoIndex] = useState(0);
 
@@ -64,7 +66,7 @@ export default function Accueil() {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerPadding }]}>
           <View>
             <Text style={styles.logo}>LIVRR</Text>
             <Text style={styles.tagline}>L'élégance du local</Text>
@@ -72,9 +74,6 @@ export default function Accueil() {
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.carteBtn} onPress={() => router.push('/carte')}>
               <Text style={styles.carteBtnText}>◎ Carte</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.profileBtn} onPress={() => router.push('/(tabs)/profil')}>
-              <Text style={styles.profileIcon}>◉</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -128,7 +127,7 @@ export default function Accueil() {
         </View>
 
         {/* Accès rapide */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accesRapideRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.accesRapideRow}>
           {[
             { label: 'Premium', icon: '✦', route: '/premium' },
             { label: 'Fidélité', icon: '◈', route: '/fidelite' },
@@ -150,7 +149,7 @@ export default function Accueil() {
         {/* Catégories avec navigation */}
         <View style={styles.section}>
           <Text style={styles.sectionTitlePadded}>Catégories</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesRow}>
             {CATEGORIES_ACCUEIL.map(cat => (
               <TouchableOpacity
                 key={cat.slug}
@@ -169,7 +168,7 @@ export default function Accueil() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Collections en vedette</Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: layout.screenPadding }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: layout.screenPadding, paddingRight: layout.screenPadding }}>
             {COLLECTIONS.map(col => (
               <TouchableOpacity
                 key={col.id}
@@ -193,7 +192,7 @@ export default function Accueil() {
               <Text style={styles.voirTout}>Voir tout ›</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: layout.screenPadding }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: layout.screenPadding, paddingRight: layout.screenPadding }}>
             {NOUVEAUTES.map(n => (
               <TouchableOpacity
                 key={n.id}
@@ -229,7 +228,7 @@ export default function Accueil() {
             <Text style={styles.sectionTitle}>Sélection pour vous</Text>
             <Text style={styles.sectionSub}>Basée sur vos achats</Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: layout.screenPadding }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: layout.screenPadding, paddingRight: layout.screenPadding }}>
             {RECOMMANDATIONS.map(p => (
               <TouchableOpacity
                 key={p.id}
@@ -281,7 +280,7 @@ export default function Accueil() {
           <Text style={styles.blogBannerArrow}>›</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: bottomPadding }} />
       </ScrollView>
     </View>
   );
@@ -291,7 +290,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: layout.screenPadding, paddingTop: 60, paddingBottom: spacing.lg,
+    paddingHorizontal: layout.screenPadding, paddingTop: layout.headerSpacing, paddingBottom: spacing.lg,
   },
   logo: { fontSize: 26, fontWeight: '400', color: colors.textPrimary, letterSpacing: 8 },
   tagline: { fontSize: 12, color: colors.gold, letterSpacing: 2, marginTop: 2 },
@@ -346,7 +345,7 @@ const styles = StyleSheet.create({
   heroBtnText: { fontSize: 13, color: colors.gold },
 
   // Accès rapide
-  accesRapideRow: { paddingLeft: layout.screenPadding, marginBottom: spacing.xl },
+  accesRapideRow: { paddingLeft: layout.screenPadding, paddingRight: layout.screenPadding, marginBottom: spacing.xl },
   accesRapideCard: {
     width: 72, alignItems: 'center', padding: spacing.sm,
     backgroundColor: colors.backgroundSoft, borderRadius: radius.lg,
@@ -367,7 +366,7 @@ const styles = StyleSheet.create({
   voirTout: { fontSize: 13, color: colors.gold },
 
   // Catégories
-  categoriesRow: { paddingLeft: layout.screenPadding },
+  categoriesRow: { paddingLeft: layout.screenPadding, paddingRight: layout.screenPadding },
   categoryChip: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
     paddingHorizontal: spacing.lg, paddingVertical: spacing.sm,

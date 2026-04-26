@@ -1,6 +1,16 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { colors, spacing, radius, layout, shadows } from '../../constants/theme';
+import { useHeaderHeight } from '../../hooks/useHeaderHeight';
+
+// Catalogue boutiques — remplacé par Supabase en Phase 2
+const BOUTIQUES = {
+  '1': { id: '1', nom: 'Boutique Parisienne', categorie: 'Mode · Accessoires', distance: '800m', delai: '45 min', note: '4,8', nbAvis: 127, initiale: 'B', ouvert: true, horaires: ['Lun–Sam : 10h00 – 19h30', 'Dimanche : Fermé'] },
+  '2': { id: '2', nom: 'Maison Dorée',        categorie: 'Mode · Chaussures',   distance: '1,2km', delai: '55 min', note: '4,9', nbAvis: 84,  initiale: 'M', ouvert: true, horaires: ['Lun–Sam : 10h00 – 20h00', 'Dimanche : 12h00 – 18h00'] },
+  '3': { id: '3', nom: 'Le Concept Store',    categorie: 'Lifestyle · Déco',     distance: '600m',  delai: '35 min', note: '4,6', nbAvis: 52,  initiale: 'C', ouvert: false, horaires: ['Mar–Sam : 11h00 – 19h00', 'Lun & Dim : Fermé'] },
+  '4': { id: '4', nom: 'Épicerie du Marais',  categorie: 'Épicerie fine',        distance: '950m',  delai: '50 min', note: '4,7', nbAvis: 39,  initiale: 'É', ouvert: true, horaires: ['Lun–Sam : 09h00 – 20h00', 'Dimanche : 10h00 – 14h00'] },
+  '5': { id: '5', nom: 'Beauté Dorée',        categorie: 'Beauté · Soins',       distance: '1,5km', delai: '60 min', note: '4,9', nbAvis: 203, initiale: 'B', ouvert: true, horaires: ['Lun–Sam : 10h00 – 19h00', 'Dimanche : Fermé'] },
+};
 
 const produits = [
   { id: '1', nom: 'Robe en soie', prix: '245,00 €', categorie: 'Mode', dispo: true },
@@ -31,13 +41,16 @@ function Etoiles({ note }) {
 
 export default function FicheBoutique() {
   const { id } = useLocalSearchParams();
+  const { topInset } = useHeaderHeight();
+
+  const boutique = BOUTIQUES[id] || BOUTIQUES['1'];
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
       {/* Image boutique */}
       <View style={styles.coverImage}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={[styles.backBtn, { top: topInset + 10 }]} onPress={() => router.back()}>
           <Text style={styles.backIcon}>‹</Text>
         </TouchableOpacity>
       </View>
@@ -46,36 +59,38 @@ export default function FicheBoutique() {
       <View style={styles.boutiqueInfo}>
         <View style={styles.boutiqueHeader}>
           <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoText}>B</Text>
+            <Text style={styles.logoText}>{boutique.initiale}</Text>
           </View>
           <View style={styles.boutiqueMeta}>
-            <Text style={styles.boutiqueName}>Boutique Parisienne</Text>
-            <Text style={styles.boutiqueCategory}>Mode · Accessoires</Text>
+            <Text style={styles.boutiqueName}>{boutique.nom}</Text>
+            <Text style={styles.boutiqueCategory}>{boutique.categorie}</Text>
           </View>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Ouvert</Text>
+          <View style={[styles.badge, !boutique.ouvert && styles.badgeFerme]}>
+            <Text style={[styles.badgeText, !boutique.ouvert && styles.badgeTextFerme]}>
+              {boutique.ouvert ? 'Ouvert' : 'Fermé'}
+            </Text>
           </View>
         </View>
 
         {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>800m</Text>
+            <Text style={styles.statValue}>{boutique.distance}</Text>
             <Text style={styles.statLabel}>Distance</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>45 min</Text>
+            <Text style={styles.statValue}>{boutique.delai}</Text>
             <Text style={styles.statLabel}>Délai estimé</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>4,8 ✦</Text>
+            <Text style={styles.statValue}>{boutique.note} ✦</Text>
             <Text style={styles.statLabel}>Note</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>127</Text>
+            <Text style={styles.statValue}>{boutique.nbAvis}</Text>
             <Text style={styles.statLabel}>Avis</Text>
           </View>
         </View>
@@ -83,15 +98,16 @@ export default function FicheBoutique() {
         {/* Horaires */}
         <View style={styles.horaires}>
           <Text style={styles.horairesTitle}>Horaires</Text>
-          <Text style={styles.horairesText}>Lun–Sam : 10h00 – 19h30</Text>
-          <Text style={styles.horairesText}>Dimanche : Fermé</Text>
+          {boutique.horaires.map((h, i) => (
+            <Text key={i} style={styles.horairesText}>{h}</Text>
+          ))}
         </View>
       </View>
 
       {/* Sélection du commerçant */}
       <View style={styles.selectionSection}>
         <Text style={styles.sectionTitle}>Sélection du moment</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: layout.screenPadding }}>
           {produits.filter(p => p.dispo).slice(0, 3).map((produit) => (
             <TouchableOpacity
               key={produit.id}
@@ -144,9 +160,9 @@ export default function FicheBoutique() {
         <View style={styles.avisTitre}>
           <Text style={styles.sectionTitle}>Avis clients</Text>
           <View style={styles.noteGlobale}>
-            <Text style={styles.noteGlobaleValeur}>4,8</Text>
+            <Text style={styles.noteGlobaleValeur}>{boutique.note}</Text>
             <Etoiles note={5} />
-            <Text style={styles.noteGlobaleCount}>127 avis</Text>
+            <Text style={styles.noteGlobaleCount}>{boutique.nbAvis} avis</Text>
           </View>
         </View>
 
@@ -177,7 +193,7 @@ export default function FicheBoutique() {
               pathname: '/chat',
               params: {
                 type: 'boutique',
-                boutiqueName: 'Boutique Parisienne',
+                boutiqueName: boutique.nom,
                 boutiqueId: id,
               },
             })
@@ -218,7 +234,6 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     position: 'absolute',
-    top: 50,
     left: layout.screenPadding,
     width: 40,
     height: 40,
@@ -276,11 +291,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9',
     borderRadius: radius.sm,
   },
+  badgeFerme: { backgroundColor: colors.backgroundSoft },
   badgeText: {
     fontSize: 11,
     color: colors.success,
     fontWeight: '400',
   },
+  badgeTextFerme: { color: colors.textMuted },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
